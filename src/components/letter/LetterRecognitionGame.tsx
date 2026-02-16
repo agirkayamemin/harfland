@@ -13,6 +13,7 @@ import Animated, {
 import { COLORS, SIZES, FONTS, SHADOW } from '../../constants/theme';
 import { Letter, ALPHABET } from '../../data/alphabet';
 import { LETTER_EMOJI } from '../../data/letterEmoji';
+import { useAudio } from '../../hooks/useAudio';
 
 interface LetterRecognitionGameProps {
   letter: Letter;
@@ -27,6 +28,7 @@ function getDistractors(correctId: string): Letter[] {
 }
 
 export function LetterRecognitionGame({ letter, onComplete }: LetterRecognitionGameProps) {
+  const { playEffect, playLetterSound } = useAudio();
   const distractors = useMemo(() => getDistractors(letter.id), [letter.id]);
   const options = useMemo(() => {
     const all = [letter, ...distractors];
@@ -51,6 +53,7 @@ export function LetterRecognitionGame({ letter, onComplete }: LetterRecognitionG
 
       if (selected.id === letter.id) {
         setIsCorrect(true);
+        playEffect('success');
         successScale.value = withSequence(
           withSpring(1.2, { damping: 8 }),
           withSpring(1, { damping: 12 })
@@ -58,6 +61,7 @@ export function LetterRecognitionGame({ letter, onComplete }: LetterRecognitionG
         setTimeout(() => onComplete(true), 800);
       } else {
         setIsCorrect(false);
+        playEffect('wrong');
         shakeX.value = withSequence(
           withTiming(-10, { duration: 50 }),
           withTiming(10, { duration: 50 }),

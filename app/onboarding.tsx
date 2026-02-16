@@ -90,19 +90,19 @@ export default function OnboardingScreen() {
         )}
 
         {/* Maskot ve karsilama */}
-        <Text style={styles.mascotBig}>{mascot.emoji}</Text>
-        <Text style={[styles.welcome, { color: mascot.color }]}>
-          {isEditMode ? 'Profil Düzenle' : 'Merhaba!'}
+        {!isEditMode && <Text style={styles.mascotBig}>{mascot.emoji}</Text>}
+        <Text style={[styles.welcome, { color: isEditMode ? COLORS.text : mascot.color }]}>
+          {isEditMode ? 'Profili Düzenle' : 'Merhaba!'}
         </Text>
         {!isEditMode && (
-          <Text style={styles.subtitle}>Ben {mascot.name}, senin ogrenme arkadasinim!</Text>
+          <Text style={styles.subtitle}>Ben {mascot.name}, senin öğrenme arkadaşınım!</Text>
         )}
 
         {/* Isim girisi */}
         <Text style={styles.question}>Senin adin ne?</Text>
         <TextInput
           style={[styles.input, SHADOW.small]}
-          placeholder="Adini yaz..."
+          placeholder="Adını yaz..."
           placeholderTextColor={COLORS.textLight}
           value={name}
           onChangeText={setName}
@@ -113,7 +113,7 @@ export default function OnboardingScreen() {
         />
 
         {/* Maskot secimi */}
-        <Text style={styles.question}>Arkadasini sec!</Text>
+        <Text style={styles.question}>Arkadaşını seç!</Text>
         <View style={styles.mascotGrid}>
           {MASCOT_OPTIONS.map((id) => (
             <MascotCard
@@ -136,7 +136,7 @@ export default function OnboardingScreen() {
           onPress={handleStart}
           disabled={!canStart}
         >
-          <Text style={styles.startButtonText}>{isEditMode ? 'Kaydet' : 'Basla!'}</Text>
+          <Text style={styles.startButtonText}>{isEditMode ? 'Kaydet' : 'Başla!'}</Text>
           <FontAwesome name="arrow-right" size={SIZES.iconSm} color={COLORS.textWhite} />
         </Pressable>
       </ScrollView>

@@ -56,14 +56,6 @@ const GAMES: GameInfo[] = [
     description: 'Sese uygun resmi bul',
     minUnlockedLetters: 5,
   },
-  {
-    type: 'coloring',
-    title: 'Harf Boyama',
-    icon: 'paint-brush',
-    color: '#F0A500',
-    description: 'Harfin içini boya',
-    minUnlockedLetters: 1,
-  },
 ];
 
 function GameCard({ game, unlocked }: { game: GameInfo; unlocked: boolean }) {

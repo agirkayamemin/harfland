@@ -14,6 +14,7 @@ import Animated, {
 import { COLORS, SIZES, FONTS, SHADOW } from '../../constants/theme';
 import { ALPHABET, Letter } from '../../data/alphabet';
 import { useProgressStore } from '../../stores/progressStore';
+import { useAudio } from '../../hooks/useAudio';
 
 const SCREEN_HEIGHT = Dimensions.get('window').height;
 const SCREEN_WIDTH = Dimensions.get('window').width;
@@ -114,6 +115,7 @@ function Balloon({ letter, index, targetX, targetY, onPop, popped, color }: Ball
 }
 
 export function BalloonGame({ onGameEnd }: BalloonGameProps) {
+  const { playEffect } = useAudio();
   const [round, setRound] = useState(0);
   const [score, setScore] = useState(0);
   const [target, setTarget] = useState<Letter | null>(null);
@@ -151,9 +153,11 @@ export function BalloonGame({ onGameEnd }: BalloonGameProps) {
 
       if (id === target?.id) {
         setFeedback('correct');
+        playEffect('success');
         setScore((prev) => prev + 1);
       } else {
         setFeedback('wrong');
+        playEffect('wrong');
       }
 
       setTimeout(() => {
@@ -210,7 +214,7 @@ export function BalloonGame({ onGameEnd }: BalloonGameProps) {
       {/* Geri bildirim */}
       {feedback === 'correct' && (
         <View style={styles.feedbackOverlay}>
-          <Text style={[styles.feedbackText, { color: COLORS.success }]}>Dogru!</Text>
+          <Text style={[styles.feedbackText, { color: COLORS.success }]}>Doğru!</Text>
         </View>
       )}
       {feedback === 'wrong' && (

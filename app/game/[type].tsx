@@ -10,17 +10,15 @@ import { MemoryGame } from '@/src/components/game/MemoryGame';
 import { MissingLetterGame } from '@/src/components/game/MissingLetterGame';
 import { TrainGame } from '@/src/components/game/TrainGame';
 import { SoundGame } from '@/src/components/game/SoundGame';
-import { ColoringGame } from '@/src/components/game/ColoringGame';
 import { ConfettiAnimation } from '@/src/components/feedback/ConfettiAnimation';
 import { useProgressStore } from '@/src/stores/progressStore';
 
 const GAME_TITLES: Record<string, string> = {
   balloon: 'Harf Balonu',
-  memory: 'Hafiza Kartlari',
+  memory: 'Hafıza Kartları',
   missing: 'Eksik Harf',
   train: 'Harf Treni',
-  sound: 'Ses Avcisi',
-  coloring: 'Harf Boyama',
+  sound: 'Ses Avcısı',
 };
 
 type GameState = 'playing' | 'result';
@@ -72,7 +70,6 @@ export default function GameScreen() {
           {type === 'missing' && <MissingLetterGame onGameEnd={handleGameEnd} />}
           {type === 'train' && <TrainGame onGameEnd={handleGameEnd} />}
           {type === 'sound' && <SoundGame onGameEnd={handleGameEnd} />}
-          {type === 'coloring' && <ColoringGame onGameEnd={handleGameEnd} />}
         </>
       )}
 
@@ -80,7 +77,7 @@ export default function GameScreen() {
       {gameState === 'result' && (
         <View style={styles.resultContainer}>
           <Text style={styles.resultTitle}>
-            {totalScore > 0 && finalScore / totalScore >= 0.7 ? 'Harika!' : totalScore > 0 && finalScore / totalScore >= 0.5 ? 'Iyi!' : 'Devam et!'}
+            {totalScore > 0 && finalScore / totalScore >= 0.7 ? 'Harika!' : totalScore > 0 && finalScore / totalScore >= 0.5 ? 'İyi!' : 'Devam et!'}
           </Text>
 
           <Text style={styles.resultScore}>

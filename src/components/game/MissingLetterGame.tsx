@@ -7,6 +7,7 @@ import { COLORS, SIZES, FONTS, SHADOW } from '../../constants/theme';
 import { ALPHABET, Letter } from '../../data/alphabet';
 import { LETTER_EMOJI } from '../../data/letterEmoji';
 import { useProgressStore } from '../../stores/progressStore';
+import { useAudio } from '../../hooks/useAudio';
 
 const ROUND_COUNT = 6;
 
@@ -36,6 +37,7 @@ function createQuestion(target: Letter) {
 }
 
 export function MissingLetterGame({ onGameEnd }: MissingLetterGameProps) {
+  const { playEffect } = useAudio();
   const letters = useMemo(() => {
     const unlocked = getUnlockedLetters();
     return unlocked.sort(() => Math.random() - 0.5).slice(0, ROUND_COUNT);
@@ -59,10 +61,12 @@ export function MissingLetterGame({ onGameEnd }: MissingLetterGameProps) {
 
       if (id === question.answer) {
         setIsCorrect(true);
+        playEffect('success');
         scoreRef.current += 1;
         setScore(scoreRef.current);
       } else {
         setIsCorrect(false);
+        playEffect('wrong');
       }
 
       setTimeout(() => {
@@ -128,7 +132,7 @@ export function MissingLetterGame({ onGameEnd }: MissingLetterGameProps) {
         <Text style={styles.feedbackCorrect}>Harika!</Text>
       )}
       {isCorrect === false && (
-        <Text style={styles.feedbackWrong}>Olmadi, tekrar dene!</Text>
+        <Text style={styles.feedbackWrong}>Olmadı, tekrar dene!</Text>
       )}
     </View>
   );

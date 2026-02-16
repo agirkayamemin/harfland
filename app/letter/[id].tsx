@@ -18,6 +18,7 @@ import { LETTER_EMOJI } from '@/src/data/letterEmoji';
 import { LetterRecognitionGame } from '@/src/components/letter/LetterRecognitionGame';
 import { ConfettiAnimation } from '@/src/components/feedback/ConfettiAnimation';
 import { useProgressStore } from '@/src/stores/progressStore';
+import { useAudio } from '@/src/hooks/useAudio';
 
 type LearningStage = 'introduce' | 'recognize' | 'trace' | 'complete';
 
@@ -30,6 +31,8 @@ export default function LetterScreen() {
   const updateLetterStage = useProgressStore((s) => s.updateLetterStage);
   const letterProgress = useProgressStore((s) => s.letterProgress[id ?? '']);
 
+  const { playLetterSound, playWordSound, playEffect } = useAudio();
+
   const [stage, setStage] = useState<LearningStage>('introduce');
   const [showConfetti, setShowConfetti] = useState(false);
 
@@ -39,12 +42,15 @@ export default function LetterScreen() {
     transform: [{ scale: letterScale.value }],
   }));
 
-  // Harf belirme animasyonu
+  // Harf belirme animasyonu + sesi cal
   useState(() => {
     letterScale.value = withSequence(
       withSpring(1.1, { damping: 8, stiffness: 150 }),
       withSpring(1, { damping: 12 })
     );
+    if (letter) {
+      setTimeout(() => playLetterSound(letter.id), 400);
+    }
   });
 
   const stageIndex = stage === 'introduce' ? 0 : stage === 'recognize' ? 1 : stage === 'trace' ? 2 : 3;
@@ -85,15 +91,16 @@ export default function LetterScreen() {
   const handleComplete = useCallback(() => {
     if (letter) {
       setShowConfetti(true);
+      playEffect('confetti');
       updateLetterStage(letter.id, 4, 80);
       setTimeout(() => router.back(), 1500);
     }
-  }, [letter, updateLetterStage, router]);
+  }, [letter, updateLetterStage, router, playEffect]);
 
   if (!letter) {
     return (
       <View style={styles.container}>
-        <Text style={styles.errorText}>Harf bulunamadi</Text>
+        <Text style={styles.errorText}>Harf bulunamadı</Text>
       </View>
     );
   }
@@ -117,7 +124,7 @@ export default function LetterScreen() {
 
       {/* Asama gostergesi */}
       <View style={styles.stageIndicator}>
-        {['Tanit', 'Bul', 'Yaz', 'Tamam'].map((label, i) => (
+        {['Tanıt', 'Bul', 'Yaz', 'Tamam'].map((label, i) => (
           <View key={label} style={styles.stageStep}>
             <View
               style={[
@@ -140,16 +147,21 @@ export default function LetterScreen() {
       {/* Asama 1: Tanitma */}
       {stage === 'introduce' && (
         <ScrollView contentContainerStyle={styles.stageContent} showsVerticalScrollIndicator={false}>
-          <Animated.View style={[styles.letterDisplay, letterAnimStyle]}>
-            <Text style={[styles.bigLetter, { color: letter.color }]}>
-              {letter.uppercase}
-            </Text>
-            <Text style={[styles.smallLetter, { color: letter.color }]}>
-              {letter.lowercase}
-            </Text>
-          </Animated.View>
+          <Pressable onPress={() => playLetterSound(letter.id)}>
+            <Animated.View style={[styles.letterDisplay, letterAnimStyle]}>
+              <Text style={[styles.bigLetter, { color: letter.color }]}>
+                {letter.uppercase}
+              </Text>
+              <Text style={[styles.smallLetter, { color: letter.color }]}>
+                {letter.lowercase}
+              </Text>
+            </Animated.View>
+          </Pressable>
 
-          <View style={[styles.wordCard, SHADOW.small, { borderColor: letter.color }]}>
+          <Pressable
+            style={[styles.wordCard, SHADOW.small, { borderColor: letter.color }]}
+            onPress={() => playWordSound(letter.exampleImage)}
+          >
             <Text style={styles.emoji}>{emoji}</Text>
             <Text style={styles.wordText}>{letter.exampleWord}</Text>
             <Text style={styles.wordHighlight}>
@@ -158,7 +170,7 @@ export default function LetterScreen() {
               </Text>
               {letter.exampleWord.slice(1)}
             </Text>
-          </View>
+          </Pressable>
 
           <Text style={styles.infoText}>
             {letter.type === 'vowel' ? 'Bu bir sesli harf' : 'Bu bir sessiz harf'}
@@ -182,9 +194,9 @@ export default function LetterScreen() {
       {/* Asama 3: Yazma */}
       {stage === 'trace' && (
         <View style={styles.stageContent}>
-          <Text style={styles.stageTitle}>Simdi yazalim!</Text>
+          <Text style={styles.stageTitle}>Şimdi yazalım!</Text>
           <Text style={styles.stageDesc}>
-            Parmaginla {letter.uppercase} harfini cizmeyi dene
+            Parmağınla {letter.uppercase} harfini çizmeyi dene
           </Text>
 
           <Text style={styles.bigEmoji}>{emoji}</Text>
@@ -211,7 +223,7 @@ export default function LetterScreen() {
         <View style={styles.stageContent}>
           <Text style={styles.completeTitle}>Tebrikler!</Text>
           <Text style={styles.completeDesc}>
-            {letter.uppercase} harfini ogrendin!
+            {letter.uppercase} harfini öğrendin!
           </Text>
 
           <View style={[styles.summaryCard, SHADOW.small]}>

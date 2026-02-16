@@ -8,6 +8,7 @@ import { COLORS, SIZES, FONTS, SHADOW } from '../../constants/theme';
 import { ALPHABET, Letter } from '../../data/alphabet';
 import { LETTER_EMOJI } from '../../data/letterEmoji';
 import { useProgressStore } from '../../stores/progressStore';
+import { useAudio } from '../../hooks/useAudio';
 
 const ROUND_COUNT = 8;
 const OPTIONS_COUNT = 4;
@@ -55,6 +56,7 @@ function buildRounds(unlocked: Letter[]): RoundData[] {
 }
 
 export function SoundGame({ onGameEnd }: SoundGameProps) {
+  const { playEffect, playLetterSound } = useAudio();
   const rounds = useMemo(() => {
     const unlocked = getUnlockedLetters();
     return buildRounds(unlocked);
@@ -75,10 +77,12 @@ export function SoundGame({ onGameEnd }: SoundGameProps) {
 
       if (index === currentRound.correctIndex) {
         setIsCorrect(true);
+        playEffect('success');
         scoreRef.current += 1;
         setScore(scoreRef.current);
       } else {
         setIsCorrect(false);
+        playEffect('wrong');
       }
 
       setTimeout(() => {
@@ -112,7 +116,7 @@ export function SoundGame({ onGameEnd }: SoundGameProps) {
         </Text>
       </View>
 
-      <Text style={styles.hint}>Bu harfle baslayan resmi bul!</Text>
+      <Text style={styles.hint}>Bu harfle başlayan resmi bul!</Text>
 
       {/* 2x2 emoji grid */}
       <View style={styles.grid}>

@@ -41,10 +41,12 @@ export const TRACE_PATHS: TracePath[] = [
   {
     letterId: 'İ',
     strokes: [
-      { d: 'M 100,40 L 100,180', direction: 'top-to-bottom', startPoint: { x: 100, y: 40 } },
-      { d: 'M 100,20 A 2,2 0 1,1 100,24', direction: 'curve', startPoint: { x: 100, y: 20 } },
+      { d: 'M 60,45 L 140,45', direction: 'left-to-right', startPoint: { x: 60, y: 45 } },
+      { d: 'M 100,45 L 100,170', direction: 'top-to-bottom', startPoint: { x: 100, y: 45 } },
+      { d: 'M 60,170 L 140,170', direction: 'left-to-right', startPoint: { x: 60, y: 170 } },
+      { d: 'M 85,18 L 115,18 L 115,30 L 85,30 L 85,18', direction: 'curve', startPoint: { x: 85, y: 18 } },
     ],
-    boundingBox: { width: 60, height: 180 },
+    boundingBox: { width: 120, height: 180 },
     difficulty: 'easy',
   },
 
@@ -153,9 +155,11 @@ export const TRACE_PATHS: TracePath[] = [
   {
     letterId: 'I',
     strokes: [
-      { d: 'M 100,20 L 100,180', direction: 'top-to-bottom', startPoint: { x: 100, y: 20 } },
+      { d: 'M 60,30 L 140,30', direction: 'left-to-right', startPoint: { x: 60, y: 30 } },
+      { d: 'M 100,30 L 100,170', direction: 'top-to-bottom', startPoint: { x: 100, y: 30 } },
+      { d: 'M 60,170 L 140,170', direction: 'left-to-right', startPoint: { x: 60, y: 170 } },
     ],
-    boundingBox: { width: 60, height: 180 },
+    boundingBox: { width: 120, height: 180 },
     difficulty: 'easy',
   },
 

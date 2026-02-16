@@ -60,13 +60,13 @@ export function ParentGateModal({ visible, onSuccess, onCancel }: ParentGateModa
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       >
         <View style={styles.card}>
-          <Text style={styles.title}>Ebeveyn Dogrulama</Text>
+          <Text style={styles.title}>Ebeveyn Doğrulama</Text>
           <Text style={styles.question}>
             {question.a} + {question.b} = ?
           </Text>
 
           {error && (
-            <Text style={styles.errorText}>Yanlis cevap, tekrar deneyin.</Text>
+            <Text style={styles.errorText}>Yanlış cevap, tekrar deneyin.</Text>
           )}
 
           <TextInput
@@ -85,14 +85,14 @@ export function ParentGateModal({ visible, onSuccess, onCancel }: ParentGateModa
 
           <View style={styles.buttonRow}>
             <Pressable style={styles.cancelButton} onPress={handleCancel}>
-              <Text style={styles.cancelButtonText}>Iptal</Text>
+              <Text style={styles.cancelButtonText}>İptal</Text>
             </Pressable>
             <Pressable
               style={[styles.submitButton, !input && styles.submitButtonDisabled]}
               onPress={handleSubmit}
               disabled={!input}
             >
-              <Text style={styles.submitButtonText}>Giris</Text>
+              <Text style={styles.submitButtonText}>Giriş</Text>
             </Pressable>
           </View>
         </View>

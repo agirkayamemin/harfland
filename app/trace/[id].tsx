@@ -15,6 +15,7 @@ import { EncouragementText } from '@/src/components/feedback/EncouragementText';
 import { HintBubble } from '@/src/components/feedback/HintBubble';
 import { useSpacedRepetition } from '@/src/hooks/useSpacedRepetition';
 import { useProgressStore } from '@/src/stores/progressStore';
+import { useAudio } from '@/src/hooks/useAudio';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
 const CANVAS_SIZE = Math.min(SCREEN_WIDTH - SIZES.paddingLg * 2, 320);
@@ -28,6 +29,8 @@ export default function TraceScreen() {
   const { processAttempt } = useSpacedRepetition();
   const addLetterToSession = useProgressStore((s) => s.addLetterToSession);
   const addActivityToSession = useProgressStore((s) => s.addActivityToSession);
+
+  const { playEffect } = useAudio();
 
   const letter = getLetterById(id ?? '');
   const tracePath = getTracePathById(id ?? '');
@@ -65,11 +68,13 @@ export default function TraceScreen() {
 
     if (result.passed) {
       setTraceState('success');
+      playEffect('star');
       processAttempt(letter.id, true, responseTime, result.score);
       addLetterToSession(letter.id);
       addActivityToSession();
     } else {
       setTraceState('retry');
+      playEffect('hint');
       processAttempt(letter.id, false, responseTime, result.score);
     }
   }, [letter, tracePath, targetPoints, startTime, processAttempt, addLetterToSession, addActivityToSession]);

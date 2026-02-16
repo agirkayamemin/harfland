@@ -14,6 +14,7 @@ import { COLORS, SIZES, FONTS, SHADOW } from '../../constants/theme';
 import { ALPHABET, Letter } from '../../data/alphabet';
 import { TRAIN_WORDS, TrainWord } from '../../data/trainWords';
 import { useProgressStore } from '../../stores/progressStore';
+import { useAudio } from '../../hooks/useAudio';
 
 const ROUND_COUNT = 6;
 const DISTRACTOR_COUNT = 2;
@@ -117,6 +118,7 @@ function LetterButton({ letter, color, used, wrong, onPress }: LetterButtonProps
 }
 
 export function TrainGame({ onGameEnd }: TrainGameProps) {
+  const { playEffect } = useAudio();
   const unlockedLetters = useMemo(() => getUnlockedLetters(), []);
   const unlockedIds = useMemo(() => new Set(unlockedLetters.map((l) => l.id)), [unlockedLetters]);
 
@@ -173,6 +175,7 @@ export function TrainGame({ onGameEnd }: TrainGameProps) {
 
         if (newFilled === currentWord.word.length) {
           // Round bitti
+          playEffect('success');
           const roundScore = wrongTaps < 3 ? 1 : 0;
           scoreRef.current += roundScore;
           setScore(scoreRef.current);
@@ -194,6 +197,7 @@ export function TrainGame({ onGameEnd }: TrainGameProps) {
         }
       } else {
         // Yanlis harf
+        playEffect('wrong');
         setWrongTaps((prev) => prev + 1);
         setWrongIndex(index);
         setFeedback('Tekrar dene!');

@@ -85,12 +85,12 @@ export default function ProfileScreen() {
 
   const handleResetProgress = () => {
     Alert.alert(
-      'Ilerlemeyi Sifirla',
-      'Tum harf ilerlemesi, oyun skorlari ve yildizlar sifirlanacak. Profil bilgileri korunacak.\n\nBu islem geri alinamaz!',
+      'İlerlemeyi Sıfırla',
+      'Tüm harf ilerlemesi, oyun skorları ve yıldızlar sıfırlanacak. Profil bilgileri korunacak.\n\nBu işlem geri alınamaz!',
       [
-        { text: 'Iptal', style: 'cancel' },
+        { text: 'İptal', style: 'cancel' },
         {
-          text: 'Sifirla',
+          text: 'Sıfırla',
           style: 'destructive',
           onPress: () => resetAllProgress(),
         },
@@ -113,24 +113,24 @@ export default function ProfileScreen() {
 
       {/* Genel ilerleme */}
       <View style={[styles.card, SHADOW.small]}>
-        <Text style={styles.cardTitle}>Genel Ilerleme</Text>
+        <Text style={styles.cardTitle}>Genel İlerleme</Text>
         <ProgressBar progress={overallProgress} color={COLORS.primary} />
         <View style={styles.statsRow}>
-          <Text style={styles.statText}>{completedCount} tamamlandi</Text>
-          <Text style={styles.statText}>{unlockedCount} acik</Text>
+          <Text style={styles.statText}>{completedCount} tamamlandı</Text>
+          <Text style={styles.statText}>{unlockedCount} açık</Text>
           <Text style={styles.statText}>%{overallProgress}</Text>
         </View>
       </View>
 
       {/* Grup bazli ilerleme */}
       <View style={[styles.card, SHADOW.small]}>
-        <Text style={styles.cardTitle}>Grup Ilerlemesi</Text>
+        <Text style={styles.cardTitle}>Grup İlerlemesi</Text>
         {Array.from({ length: TOTAL_GROUPS }).map((_, i) => {
           const groupNum = i + 1;
           const color = GROUP_COLORS[groupNum as keyof typeof GROUP_COLORS];
           const groupNames = [
             '', 'Kolay Sesli', 'Kolay Sessiz', 'Sesli Devam', 'Sessiz Devam',
-            'Yeni Sesli', 'Orta Sessiz', 'Ileri Sessiz', 'Zor Harfler',
+            'Yeni Sesli', 'Orta Sessiz', 'İleri Sessiz', 'Zor Harfler',
           ];
           return (
             <View key={groupNum} style={styles.groupRow}>
@@ -152,7 +152,7 @@ export default function ProfileScreen() {
             color={COLORS.textLight}
           />
           <Text style={styles.settingsButtonText}>
-            {parentGateUnlocked ? 'Ayarlari Kilitle' : 'Ebeveyn Ayarlari'}
+            {parentGateUnlocked ? 'Ayarları Kilitle' : 'Ebeveyn Ayarları'}
           </Text>
         </Pressable>
 
@@ -167,13 +167,13 @@ export default function ProfileScreen() {
               onPress={() => router.push('/onboarding?edit=1')}
             >
               <FontAwesome name="pencil" size={SIZES.iconSm} color={COLORS.text} />
-              <Text style={styles.settingLabel}>Profil Duzenle</Text>
+              <Text style={styles.settingLabel}>Profili Düzenle</Text>
               <FontAwesome name="chevron-right" size={SIZES.iconSm} color={COLORS.locked} />
             </Pressable>
 
-            {/* ── Ses Ayarlari ── */}
+            {/* ── Ses Ayarları ── */}
             <View style={styles.settingSeparator} />
-            <Text style={styles.sectionLabel}>Ses Ayarlari</Text>
+            <Text style={styles.sectionLabel}>Ses Ayarları</Text>
 
             <Pressable style={styles.settingRow} onPress={toggleSound}>
               <FontAwesome
@@ -183,7 +183,7 @@ export default function ProfileScreen() {
               />
               <Text style={styles.settingLabel}>Sesler</Text>
               <Text style={[styles.settingValue, { color: soundEnabled ? COLORS.success : COLORS.locked }]}>
-                {soundEnabled ? 'Acik' : 'Kapali'}
+                {soundEnabled ? 'Açık' : 'Kapalı'}
               </Text>
             </Pressable>
 
@@ -193,9 +193,9 @@ export default function ProfileScreen() {
                 size={SIZES.iconSm}
                 color={COLORS.text}
               />
-              <Text style={styles.settingLabel}>Muzik</Text>
+              <Text style={styles.settingLabel}>Müzik</Text>
               <Text style={[styles.settingValue, { color: musicEnabled ? COLORS.success : COLORS.locked }]}>
-                {musicEnabled ? 'Acik' : 'Kapali'}
+                {musicEnabled ? 'Açık' : 'Kapalı'}
               </Text>
             </Pressable>
 
@@ -239,21 +239,21 @@ export default function ProfileScreen() {
             </View>
             <Text style={styles.settingDescription}>
               {difficulty === 'auto'
-                ? 'Cocugun performansina gore otomatik ayarlanir'
+                ? 'Çocuğun performansına göre otomatik ayarlanır'
                 : difficulty === 'easy'
-                  ? 'Daha fazla ipucu ve daha genis tolerans'
+                  ? 'Daha fazla ipucu ve daha geniş tolerans'
                   : 'Daha az ipucu ve daha dar tolerans'}
             </Text>
 
-            {/* ── Mola Hatirlatici ── */}
+            {/* ── Mola Hatırlatıcı ── */}
             <View style={styles.settingSeparator} />
-            <Text style={styles.sectionLabel}>Mola Hatirlatici</Text>
+            <Text style={styles.sectionLabel}>Mola Hatırlatıcı</Text>
 
             <Pressable style={styles.settingRow} onPress={toggleSessionReminder}>
               <FontAwesome name="clock-o" size={SIZES.iconSm} color={COLORS.text} />
-              <Text style={styles.settingLabel}>Mola Hatirlatici</Text>
+              <Text style={styles.settingLabel}>Mola Hatırlatıcı</Text>
               <Text style={[styles.settingValue, { color: sessionReminderEnabled ? COLORS.success : COLORS.locked }]}>
-                {sessionReminderEnabled ? 'Acik' : 'Kapali'}
+                {sessionReminderEnabled ? 'Açık' : 'Kapalı'}
               </Text>
             </Pressable>
 
@@ -277,7 +277,7 @@ export default function ProfileScreen() {
             <View style={styles.settingSeparator} />
             <Pressable style={styles.resetButton} onPress={handleResetProgress}>
               <FontAwesome name="refresh" size={SIZES.iconSm} color={COLORS.textWhite} />
-              <Text style={styles.resetButtonText}>Ilerlemeyi Sifirla</Text>
+              <Text style={styles.resetButtonText}>İlerlemeyi Sıfırla</Text>
             </Pressable>
           </View>
         )}

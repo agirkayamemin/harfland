@@ -45,3 +45,7 @@ CLAUDE.md
 PLAN.md
 PROGRESS.md
 .vscode/
+
+# ses uretim araclari
+.tts-venv/
+scripts/

@@ -11,6 +11,7 @@ import Animated, {
 import { COLORS, SIZES, FONTS, SHADOW } from '../../constants/theme';
 import { ALPHABET, Letter } from '../../data/alphabet';
 import { useProgressStore } from '../../stores/progressStore';
+import { useAudio } from '../../hooks/useAudio';
 
 const PAIRS = 6;
 const COLS = 3;
@@ -84,6 +85,7 @@ function MemoryCard({ card, faceUp, matched, onFlip }: MemoryCardProps) {
 }
 
 export function MemoryGame({ onGameEnd }: MemoryGameProps) {
+  const { playEffect } = useAudio();
   const cards = useMemo(() => getGameCards(), []);
   const [flipped, setFlipped] = useState<number[]>([]);
   const [matched, setMatched] = useState<Set<string>>(new Set());
@@ -106,6 +108,7 @@ export function MemoryGame({ onGameEnd }: MemoryGameProps) {
 
         if (card1.letterId === card2.letterId) {
           // Eslesti
+          playEffect('success');
           const newMatched = new Set(matched);
           newMatched.add(card1.id);
           newMatched.add(card2.id);
@@ -122,6 +125,7 @@ export function MemoryGame({ onGameEnd }: MemoryGameProps) {
           }
         } else {
           // Eslesmedi, geri cevir
+          playEffect('wrong');
           setTimeout(() => {
             setFlipped([]);
             setLocked(false);
@@ -137,7 +141,7 @@ export function MemoryGame({ onGameEnd }: MemoryGameProps) {
       <View style={styles.header}>
         <Text style={styles.movesText}>Hamle: {moves}</Text>
         <Text style={styles.pairsText}>
-          {matched.size / 2}/{PAIRS} eslesme
+          {matched.size / 2}/{PAIRS} eşleşme
         </Text>
       </View>
 
