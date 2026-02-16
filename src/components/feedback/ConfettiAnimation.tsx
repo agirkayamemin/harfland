@@ -110,7 +110,7 @@ export function ConfettiAnimation({ visible, onFinish }: ConfettiAnimationProps)
   if (!visible) return null;
 
   return (
-    <View style={styles.container} pointerEvents="none">
+    <View style={styles.container} pointerEvents="none" importantForAccessibility="no-hide-descendants" accessibilityElementsHidden={true}>
       {Array.from({ length: PARTICLE_COUNT }).map((_, i) => (
         <ConfettiParticle
           key={i}

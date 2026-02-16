@@ -1,7 +1,7 @@
 // Hafiza Kartlari - Harf-kelime eslestirme hafiza oyunu
 // 12 kart (6 cift), her cift: harf + emoji
 
-import { useState, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { StyleSheet, View, Text, Pressable } from 'react-native';
 import Animated, {
   useSharedValue,
@@ -9,7 +9,9 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 import { COLORS, SIZES, FONTS, SHADOW } from '../../constants/theme';
+import { HintBubble } from '../../components/feedback/HintBubble';
 import { ALPHABET, Letter } from '../../data/alphabet';
+import { LETTER_EMOJI } from '../../data/letterEmoji';
 import { useProgressStore } from '../../stores/progressStore';
 import { useAudio } from '../../hooks/useAudio';
 
@@ -25,6 +27,7 @@ interface Card {
   letterId: string;
   display: string;
   color: string;
+  type?: 'letter' | 'emoji';
 }
 
 function getGameCards(): Card[] {
@@ -36,18 +39,20 @@ function getGameCards(): Card[] {
 
   const cards: Card[] = [];
   selected.forEach((letter, i) => {
-    // Ayni harften 2 kart (ikiz cift)
+    // Her cift: harf + emoji
     cards.push({
       id: `${letter.id}-a`,
       letterId: letter.id,
       display: letter.uppercase,
       color: letter.color,
+      type: 'letter',
     });
     cards.push({
       id: `${letter.id}-b`,
       letterId: letter.id,
-      display: letter.uppercase,
+      display: LETTER_EMOJI[letter.id] ?? '❓',
       color: letter.color,
+      type: 'emoji',
     });
   });
 
@@ -72,6 +77,9 @@ function MemoryCard({ card, faceUp, matched, onFlip }: MemoryCardProps) {
       ]}
       onPress={onFlip}
       disabled={faceUp || matched}
+      accessibilityLabel={faceUp || matched ? `${card.display} harfi${matched ? ', eşleşti' : ''}` : 'Kapalı kart'}
+      accessibilityRole="button"
+      accessibilityState={{ disabled: faceUp || matched }}
     >
       {faceUp || matched ? (
         <Text style={[styles.cardContent, { color: card.color }]}>
@@ -86,14 +94,19 @@ function MemoryCard({ card, faceUp, matched, onFlip }: MemoryCardProps) {
 
 export function MemoryGame({ onGameEnd }: MemoryGameProps) {
   const { playEffect } = useAudio();
+  const [lastActivity, setLastActivity] = useState(Date.now());
   const cards = useMemo(() => getGameCards(), []);
   const [flipped, setFlipped] = useState<number[]>([]);
   const [matched, setMatched] = useState<Set<string>>(new Set());
   const [moves, setMoves] = useState(0);
   const [locked, setLocked] = useState(false);
+  const timerRef = useRef<ReturnType<typeof setTimeout>>(undefined);
+
+  useEffect(() => () => { clearTimeout(timerRef.current); }, []);
 
   const handleFlip = useCallback(
     (index: number) => {
+      setLastActivity(Date.now());
       if (locked || flipped.includes(index)) return;
 
       const newFlipped = [...flipped, index];
@@ -118,7 +131,7 @@ export function MemoryGame({ onGameEnd }: MemoryGameProps) {
 
           // Tum kartlar eslestirildi mi
           if (newMatched.size === cards.length) {
-            setTimeout(() => {
+            timerRef.current = setTimeout(() => {
               const score = Math.max(0, 100 - (moves * 5));
               onGameEnd(score, 100);
             }, 500);
@@ -126,7 +139,7 @@ export function MemoryGame({ onGameEnd }: MemoryGameProps) {
         } else {
           // Eslesmedi, geri cevir
           playEffect('wrong');
-          setTimeout(() => {
+          timerRef.current = setTimeout(() => {
             setFlipped([]);
             setLocked(false);
           }, 800);
@@ -141,7 +154,7 @@ export function MemoryGame({ onGameEnd }: MemoryGameProps) {
       <View style={styles.header}>
         <Text style={styles.movesText}>Hamle: {moves}</Text>
         <Text style={styles.pairsText}>
-          {matched.size / 2}/{PAIRS} eşleşme
+          {matched.size / 2}/{cards.length / 2} eşleşme
         </Text>
       </View>
 
@@ -156,6 +169,8 @@ export function MemoryGame({ onGameEnd }: MemoryGameProps) {
           />
         ))}
       </View>
+
+      <HintBubble hint="Aynı harfi ve emojisini eşleştir!" activityTimestamp={lastActivity} />
     </View>
   );
 }
@@ -172,13 +187,13 @@ const styles = StyleSheet.create({
   },
   movesText: {
     fontSize: FONTS.sizeMd,
-    fontWeight: FONTS.weightBold,
+    fontFamily: FONTS.familyBold,
     color: COLORS.text,
   },
   pairsText: {
     fontSize: FONTS.sizeMd,
-    fontWeight: FONTS.weightBold,
-    color: COLORS.success,
+    fontFamily: FONTS.familyBold,
+    color: COLORS.successText,
   },
   grid: {
     flexDirection: 'row',
@@ -203,12 +218,12 @@ const styles = StyleSheet.create({
   },
   cardContent: {
     fontSize: FONTS.sizeXl,
-    fontWeight: FONTS.weightBlack,
+    fontFamily: FONTS.familyBlack,
     color: COLORS.text,
   },
   cardBack: {
     fontSize: FONTS.sizeXl,
-    fontWeight: FONTS.weightBlack,
+    fontFamily: FONTS.familyBlack,
     color: COLORS.border,
   },
 });

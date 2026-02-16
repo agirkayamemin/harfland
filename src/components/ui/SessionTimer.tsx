@@ -49,14 +49,14 @@ export function SessionTimer() {
   return (
     <Modal transparent visible={showReminder} animationType="fade">
       <View style={styles.overlay}>
-        <View style={styles.card}>
+        <View style={styles.card} accessibilityViewIsModal={true}>
           <Text style={styles.emoji}>😴</Text>
           <Text style={styles.title}>Mola Zamani!</Text>
           <Text style={styles.message}>
             {sessionReminderMinutes} dakikadir oynuyorsun.{'\n'}Biraz dinlenmeye ne dersin?
           </Text>
 
-          <Pressable style={styles.button} onPress={handleDismiss}>
+          <Pressable style={styles.button} onPress={handleDismiss} accessibilityLabel="Devam et" accessibilityRole="button">
             <FontAwesome name="play" size={SIZES.iconSm} color={COLORS.textWhite} />
             <Text style={styles.buttonText}>Devam Et</Text>
           </Pressable>
@@ -88,8 +88,8 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: FONTS.sizeXl,
-    fontWeight: FONTS.weightBlack,
-    color: COLORS.primary,
+    fontFamily: FONTS.familyBlack,
+    color: COLORS.primaryText,
   },
   message: {
     fontSize: FONTS.sizeMd,
@@ -111,7 +111,7 @@ const styles = StyleSheet.create({
   },
   buttonText: {
     fontSize: FONTS.sizeMd,
-    fontWeight: FONTS.weightBold,
+    fontFamily: FONTS.familyBold,
     color: COLORS.textWhite,
   },
 });

@@ -1,4 +1,5 @@
 // Harf Listesi - 29 harfin grid gorunumu
+import { useMemo } from 'react';
 import { StyleSheet, View, Text, Pressable, FlatList } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -30,6 +31,9 @@ function LetterGridItem({ letter }: { letter: Letter }) {
         }
       }}
       disabled={!unlocked}
+      accessibilityLabel={`${letter.uppercase} harfi${completed ? ', tamamlandı' : ''}${!unlocked ? ', kilitli' : ''}`}
+      accessibilityRole="button"
+      accessibilityState={{ disabled: !unlocked }}
     >
       <Text
         style={[
@@ -58,7 +62,7 @@ export default function LettersScreen() {
   const { unlockedCount } = useLetterProgress();
 
   // Pedagojik siraya gore sirala
-  const sortedAlphabet = [...ALPHABET].sort((a, b) => a.order - b.order);
+  const sortedAlphabet = useMemo(() => [...ALPHABET].sort((a, b) => a.order - b.order), []);
 
   return (
     <View style={[styles.container, { paddingTop: insets.top + SIZES.paddingMd }]}>
@@ -92,7 +96,7 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: FONTS.sizeXl,
-    fontWeight: FONTS.weightBold,
+    fontFamily: FONTS.familyBold,
     color: COLORS.text,
   },
   subtitle: {
@@ -122,7 +126,7 @@ const styles = StyleSheet.create({
   },
   letterText: {
     fontSize: FONTS.sizeXl,
-    fontWeight: FONTS.weightBlack,
+    fontFamily: FONTS.familyBlack,
   },
   letterCardCompleted: {
     backgroundColor: '#F0FFF4',

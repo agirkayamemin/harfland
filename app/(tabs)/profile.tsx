@@ -14,7 +14,13 @@ import { ParentGateModal } from '@/src/components/ui/ParentGateModal';
 // Basit ilerleme cubugu componenti
 function ProgressBar({ progress, color }: { progress: number; color: string }) {
   return (
-    <View style={styles.progressBarBg}>
+    <View
+      style={styles.progressBarBg}
+      accessible={true}
+      accessibilityRole="progressbar"
+      accessibilityLabel={`İlerleme yüzde ${Math.round(progress)}`}
+      accessibilityValue={{ min: 0, max: 100, now: Math.round(progress) }}
+    >
       <View
         style={[
           styles.progressBarFill,
@@ -104,7 +110,11 @@ export default function ProfileScreen() {
       showsVerticalScrollIndicator={false}
     >
       {/* Profil basligi */}
-      <View style={styles.profileHeader}>
+      <View
+        style={styles.profileHeader}
+        accessible={true}
+        accessibilityLabel={`Profil, ${displayName}, maskot ${mascot.name}`}
+      >
         <View style={[styles.avatarCircle, SHADOW.medium, { borderColor: mascot.color }]}>
           <Text style={styles.avatarEmoji}>{mascot.emoji}</Text>
         </View>
@@ -145,7 +155,12 @@ export default function ProfileScreen() {
 
       {/* Ayarlar */}
       <View style={[styles.card, SHADOW.small]}>
-        <Pressable style={styles.settingsButton} onPress={handleParentGate}>
+        <Pressable
+          style={styles.settingsButton}
+          onPress={handleParentGate}
+          accessibilityLabel={parentGateUnlocked ? 'Ayarları kilitle' : 'Ebeveyn ayarları, kilitli'}
+          accessibilityRole="button"
+        >
           <FontAwesome
             name={parentGateUnlocked ? 'unlock' : 'lock'}
             size={SIZES.iconSm}
@@ -165,6 +180,8 @@ export default function ProfileScreen() {
             <Pressable
               style={styles.settingRow}
               onPress={() => router.push('/onboarding?edit=1')}
+              accessibilityLabel="Profili düzenle"
+              accessibilityRole="button"
             >
               <FontAwesome name="pencil" size={SIZES.iconSm} color={COLORS.text} />
               <Text style={styles.settingLabel}>Profili Düzenle</Text>
@@ -175,7 +192,12 @@ export default function ProfileScreen() {
             <View style={styles.settingSeparator} />
             <Text style={styles.sectionLabel}>Ses Ayarları</Text>
 
-            <Pressable style={styles.settingRow} onPress={toggleSound}>
+            <Pressable
+              style={styles.settingRow}
+              onPress={toggleSound}
+              accessibilityLabel={`Sesler, ${soundEnabled ? 'açık' : 'kapalı'}`}
+              accessibilityRole="switch"
+            >
               <FontAwesome
                 name={soundEnabled ? 'volume-up' : 'volume-off'}
                 size={SIZES.iconSm}
@@ -187,7 +209,12 @@ export default function ProfileScreen() {
               </Text>
             </Pressable>
 
-            <Pressable style={styles.settingRow} onPress={toggleMusic}>
+            <Pressable
+              style={styles.settingRow}
+              onPress={toggleMusic}
+              accessibilityLabel={`Müzik, ${musicEnabled ? 'açık' : 'kapalı'}`}
+              accessibilityRole="switch"
+            >
               <FontAwesome
                 name="music"
                 size={SIZES.iconSm}
@@ -207,6 +234,8 @@ export default function ProfileScreen() {
                 style={styles.volumeButton}
                 onPress={() => setSoundVolume(soundVolume - 0.1)}
                 disabled={soundVolume <= 0.1}
+                accessibilityLabel="Ses seviyesini azalt"
+                accessibilityRole="button"
               >
                 <Text style={[styles.volumeButtonText, soundVolume <= 0.1 && styles.volumeButtonDisabled]}>-</Text>
               </Pressable>
@@ -215,6 +244,8 @@ export default function ProfileScreen() {
                 style={styles.volumeButton}
                 onPress={() => setSoundVolume(soundVolume + 0.1)}
                 disabled={soundVolume >= 1}
+                accessibilityLabel="Ses seviyesini artır"
+                accessibilityRole="button"
               >
                 <Text style={[styles.volumeButtonText, soundVolume >= 1 && styles.volumeButtonDisabled]}>+</Text>
               </Pressable>
@@ -230,6 +261,9 @@ export default function ProfileScreen() {
                   key={opt.value}
                   style={[styles.pill, difficulty === opt.value && styles.pillSelected]}
                   onPress={() => setDifficulty(opt.value)}
+                  accessibilityLabel={opt.label}
+                  accessibilityRole="radio"
+                  accessibilityState={{ selected: difficulty === opt.value }}
                 >
                   <Text style={[styles.pillText, difficulty === opt.value && styles.pillTextSelected]}>
                     {opt.label}
@@ -249,7 +283,12 @@ export default function ProfileScreen() {
             <View style={styles.settingSeparator} />
             <Text style={styles.sectionLabel}>Mola Hatırlatıcı</Text>
 
-            <Pressable style={styles.settingRow} onPress={toggleSessionReminder}>
+            <Pressable
+              style={styles.settingRow}
+              onPress={toggleSessionReminder}
+              accessibilityLabel={`Mola hatırlatıcı, ${sessionReminderEnabled ? 'açık' : 'kapalı'}`}
+              accessibilityRole="switch"
+            >
               <FontAwesome name="clock-o" size={SIZES.iconSm} color={COLORS.text} />
               <Text style={styles.settingLabel}>Mola Hatırlatıcı</Text>
               <Text style={[styles.settingValue, { color: sessionReminderEnabled ? COLORS.success : COLORS.locked }]}>
@@ -264,6 +303,9 @@ export default function ProfileScreen() {
                     key={min}
                     style={[styles.pill, sessionReminderMinutes === min && styles.pillSelected]}
                     onPress={() => setSessionReminderMinutes(min)}
+                    accessibilityLabel={`${min} dakika`}
+                    accessibilityRole="radio"
+                    accessibilityState={{ selected: sessionReminderMinutes === min }}
                   >
                     <Text style={[styles.pillText, sessionReminderMinutes === min && styles.pillTextSelected]}>
                       {min} dk
@@ -275,7 +317,12 @@ export default function ProfileScreen() {
 
             {/* ── Tehlikeli Alan ── */}
             <View style={styles.settingSeparator} />
-            <Pressable style={styles.resetButton} onPress={handleResetProgress}>
+            <Pressable
+              style={styles.resetButton}
+              onPress={handleResetProgress}
+              accessibilityLabel="İlerlemeyi sıfırla"
+              accessibilityRole="button"
+            >
               <FontAwesome name="refresh" size={SIZES.iconSm} color={COLORS.textWhite} />
               <Text style={styles.resetButtonText}>İlerlemeyi Sıfırla</Text>
             </Pressable>
@@ -321,7 +368,7 @@ const styles = StyleSheet.create({
   },
   profileName: {
     fontSize: FONTS.sizeXl,
-    fontWeight: FONTS.weightBold,
+    fontFamily: FONTS.familyBold,
     color: COLORS.text,
   },
   card: {
@@ -332,7 +379,7 @@ const styles = StyleSheet.create({
   },
   cardTitle: {
     fontSize: FONTS.sizeMd,
-    fontWeight: FONTS.weightBold,
+    fontFamily: FONTS.familyBold,
     color: COLORS.text,
     marginBottom: SIZES.paddingMd,
   },
@@ -361,7 +408,7 @@ const styles = StyleSheet.create({
   },
   groupLabel: {
     fontSize: FONTS.sizeSm,
-    fontWeight: FONTS.weightMedium,
+    fontFamily: FONTS.familyBold,
   },
   settingsButton: {
     flexDirection: 'row',
@@ -371,7 +418,7 @@ const styles = StyleSheet.create({
   },
   settingsButtonText: {
     fontSize: FONTS.sizeMd,
-    fontWeight: FONTS.weightMedium,
+    fontFamily: FONTS.familyBold,
     color: COLORS.textLight,
   },
   settingsContent: {
@@ -392,7 +439,7 @@ const styles = StyleSheet.create({
   },
   settingValue: {
     fontSize: FONTS.sizeSm,
-    fontWeight: FONTS.weightMedium,
+    fontFamily: FONTS.familyBold,
   },
   // Section separator & label
   settingSeparator: {
@@ -402,7 +449,7 @@ const styles = StyleSheet.create({
   },
   sectionLabel: {
     fontSize: FONTS.sizeSm,
-    fontWeight: FONTS.weightBold,
+    fontFamily: FONTS.familyBold,
     color: COLORS.textLight,
     textTransform: 'uppercase',
     letterSpacing: 1,
@@ -427,12 +474,12 @@ const styles = StyleSheet.create({
   },
   pillText: {
     fontSize: FONTS.sizeSm,
-    fontWeight: FONTS.weightMedium,
+    fontFamily: FONTS.familyBold,
     color: COLORS.text,
   },
   pillTextSelected: {
     color: COLORS.textWhite,
-    fontWeight: FONTS.weightBold,
+    fontFamily: FONTS.familyBold,
   },
   // Volume stepper
   volumeRow: {
@@ -452,7 +499,7 @@ const styles = StyleSheet.create({
   },
   volumeButtonText: {
     fontSize: FONTS.sizeLg,
-    fontWeight: FONTS.weightBold,
+    fontFamily: FONTS.familyBold,
     color: COLORS.text,
   },
   volumeButtonDisabled: {
@@ -460,7 +507,7 @@ const styles = StyleSheet.create({
   },
   volumeText: {
     fontSize: FONTS.sizeMd,
-    fontWeight: FONTS.weightBold,
+    fontFamily: FONTS.familyBold,
     color: COLORS.text,
     minWidth: 50,
     textAlign: 'center',
@@ -485,7 +532,7 @@ const styles = StyleSheet.create({
   },
   resetButtonText: {
     fontSize: FONTS.sizeMd,
-    fontWeight: FONTS.weightBold,
+    fontFamily: FONTS.familyBold,
     color: COLORS.textWhite,
   },
 });

@@ -98,7 +98,7 @@ const createInitialLetterProgress = (): Record<string, LetterProgress> => {
       bestTraceScore: 0,
       lastPracticed: '',
       nextReview: today,
-      unlocked: letter.order === 1, // Sadece ilk harf (E) acik
+      unlocked: letter.order <= 3, // Ilk 3 harf acik (Grup 1: E, A, İ)
       easeFactor: 2.0,
       consecutiveCorrect: 0,
     };
@@ -260,17 +260,17 @@ export const useProgressStore = create<ProgressState>()(
 
       // Oyun skoru kaydet
       recordGameScore: (gameType, score, duration) => {
-        set({
-          gameScores: [
-            ...get().gameScores,
-            {
-              gameType,
-              score,
-              playedAt: new Date().toISOString(),
-              duration,
-            },
-          ],
-        });
+        const scores = [
+          ...get().gameScores,
+          {
+            gameType,
+            score,
+            playedAt: new Date().toISOString(),
+            duration,
+          },
+        ];
+        // Son 100 skoru tut, eski kayitlari at
+        set({ gameScores: scores.slice(-100) });
       },
 
       // Oturum baslat

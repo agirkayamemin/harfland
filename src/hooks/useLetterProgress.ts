@@ -1,7 +1,7 @@
 // Harfland - Harf Ilerleme Hook'u
 // Harf durumu sorgulama: asama, kilit, siradaki harf, tekrar listesi
 
-import { useMemo } from 'react';
+import { useMemo, useCallback } from 'react';
 import { useProgressStore } from '../stores/progressStore';
 import { ALPHABET } from '../data/alphabet';
 
@@ -9,19 +9,19 @@ export function useLetterProgress() {
   const letterProgress = useProgressStore((s) => s.letterProgress);
 
   // Harfin mevcut asamasi (1-4)
-  const getLetterStage = (letterId: string): number => {
+  const getLetterStage = useCallback((letterId: string): number => {
     return letterProgress[letterId]?.stage ?? 1;
-  };
+  }, [letterProgress]);
 
   // Harf acik mi
-  const isLetterUnlocked = (letterId: string): boolean => {
+  const isLetterUnlocked = useCallback((letterId: string): boolean => {
     return letterProgress[letterId]?.unlocked ?? false;
-  };
+  }, [letterProgress]);
 
   // Harfin ustalik skoru (0-100)
-  const getLetterMastery = (letterId: string): number => {
+  const getLetterMastery = useCallback((letterId: string): number => {
     return letterProgress[letterId]?.masteryScore ?? 0;
-  };
+  }, [letterProgress]);
 
   // Siradaki ogrenilecek harf (acik olup henuz tamamlanmamis veya ilk kilitli)
   const nextLetterToLearn = useMemo(() => {

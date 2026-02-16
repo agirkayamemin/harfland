@@ -59,7 +59,7 @@ export function ParentGateModal({ visible, onSuccess, onCancel }: ParentGateModa
         style={styles.overlay}
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       >
-        <View style={styles.card}>
+        <View style={styles.card} accessibilityViewIsModal={true}>
           <Text style={styles.title}>Ebeveyn Doğrulama</Text>
           <Text style={styles.question}>
             {question.a} + {question.b} = ?
@@ -81,16 +81,19 @@ export function ParentGateModal({ visible, onSuccess, onCancel }: ParentGateModa
             maxLength={3}
             placeholder="?"
             placeholderTextColor={COLORS.locked}
+            accessibilityLabel={`${question.a} artı ${question.b} sonucu`}
           />
 
           <View style={styles.buttonRow}>
-            <Pressable style={styles.cancelButton} onPress={handleCancel}>
+            <Pressable style={styles.cancelButton} onPress={handleCancel} accessibilityLabel="İptal" accessibilityRole="button">
               <Text style={styles.cancelButtonText}>İptal</Text>
             </Pressable>
             <Pressable
               style={[styles.submitButton, !input && styles.submitButtonDisabled]}
               onPress={handleSubmit}
               disabled={!input}
+              accessibilityLabel="Giriş"
+              accessibilityRole="button"
             >
               <Text style={styles.submitButtonText}>Giriş</Text>
             </Pressable>
@@ -120,17 +123,17 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: FONTS.sizeMd,
-    fontWeight: FONTS.weightBold,
+    fontFamily: FONTS.familyBold,
     color: COLORS.text,
   },
   question: {
     fontSize: FONTS.sizeLg,
-    fontWeight: FONTS.weightBlack,
-    color: COLORS.primary,
+    fontFamily: FONTS.familyBlack,
+    color: COLORS.primaryText,
   },
   errorText: {
     fontSize: FONTS.sizeSm,
-    color: COLORS.warning,
+    color: COLORS.warningText,
     textAlign: 'center',
   },
   input: {
@@ -140,7 +143,7 @@ const styles = StyleSheet.create({
     borderColor: COLORS.border,
     borderRadius: SIZES.radiusSm,
     fontSize: FONTS.sizeLg,
-    fontWeight: FONTS.weightBold,
+    fontFamily: FONTS.familyBold,
     color: COLORS.text,
     textAlign: 'center',
   },
@@ -159,7 +162,7 @@ const styles = StyleSheet.create({
   },
   cancelButtonText: {
     fontSize: FONTS.sizeMd,
-    fontWeight: FONTS.weightMedium,
+    fontFamily: FONTS.familyBold,
     color: COLORS.textLight,
   },
   submitButton: {
@@ -175,7 +178,7 @@ const styles = StyleSheet.create({
   },
   submitButtonText: {
     fontSize: FONTS.sizeMd,
-    fontWeight: FONTS.weightBold,
+    fontFamily: FONTS.familyBold,
     color: COLORS.textWhite,
   },
 });

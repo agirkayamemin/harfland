@@ -27,7 +27,11 @@ export default function HomeScreen() {
             <Text style={styles.greeting}>Merhaba,</Text>
             <Text style={styles.name}>{displayName}!</Text>
           </View>
-          <Pressable onPress={() => router.push('/onboarding?edit=1')}>
+          <Pressable
+            onPress={() => router.push('/onboarding?edit=1')}
+            accessibilityLabel="Profili düzenle"
+            accessibilityRole="button"
+          >
             <Text style={styles.headerMascot}>{mascot.emoji}</Text>
           </Pressable>
         </View>
@@ -35,23 +39,41 @@ export default function HomeScreen() {
 
       {/* Ilerleme */}
       <View style={styles.statsRow}>
-        <View style={[styles.statCard, SHADOW.small]}>
+        <View
+          style={[styles.statCard, SHADOW.small]}
+          accessible={true}
+          accessibilityLabel={`${completedCount} harf öğrenildi, toplam 29`}
+        >
           <FontAwesome name="font" size={SIZES.iconLg} color={COLORS.primary} />
           <Text style={styles.statNumber}>{completedCount}/29</Text>
           <Text style={styles.statLabel}>Harf</Text>
         </View>
-        <View style={[styles.statCard, SHADOW.small]}>
+        <View
+          style={[styles.statCard, SHADOW.small]}
+          accessible={true}
+          accessibilityLabel={`Yüzde ${overallProgress} ilerleme`}
+        >
           <FontAwesome name="line-chart" size={SIZES.iconLg} color={COLORS.secondary} />
           <Text style={styles.statNumber}>%{overallProgress}</Text>
           <Text style={styles.statLabel}>İlerleme</Text>
         </View>
       </View>
 
-      {/* Bugunun harfi */}
-      {nextLetterToLearn && (
+      {/* Bugunun harfi veya tum harfler tamamlandi kutlamasi */}
+      {completedCount >= 29 ? (
+        <View style={[styles.congratsCard, SHADOW.medium]}>
+          <Text style={styles.congratsEmoji}>🎉</Text>
+          <Text style={styles.congratsTitle}>Tüm Harfleri Öğrendin!</Text>
+          <Text style={styles.congratsSubtitle}>
+            Harika bir iş çıkardın! Oyunlarla pratik yapmaya devam et!
+          </Text>
+        </View>
+      ) : nextLetterToLearn ? (
         <Pressable
           style={[styles.todayCard, SHADOW.medium, { borderLeftColor: nextLetterToLearn.color }]}
           onPress={() => router.push(`/letter/${nextLetterToLearn.id}`)}
+          accessibilityLabel={`Bugünün harfi ${nextLetterToLearn.uppercase}, ${nextLetterToLearn.exampleWord}`}
+          accessibilityRole="button"
         >
           <View style={styles.todayLeft}>
             <Text style={styles.todayLabel}>Bugünün Harfi</Text>
@@ -64,7 +86,7 @@ export default function HomeScreen() {
             <FontAwesome name="arrow-right" size={SIZES.iconSm} color={COLORS.textLight} />
           </View>
         </Pressable>
-      )}
+      ) : null}
 
       {/* Tekrar hatirlatma */}
       {lettersForReview.length > 0 && (
@@ -74,6 +96,8 @@ export default function HomeScreen() {
             const firstReview = lettersForReview[0];
             router.push(`/letter/${firstReview.id}`);
           }}
+          accessibilityLabel={`Tekrar zamanı, ${lettersForReview.length} harf tekrar bekliyor`}
+          accessibilityRole="button"
         >
           <FontAwesome name="refresh" size={SIZES.iconMd} color={COLORS.warning} />
           <View style={styles.reviewTextContainer}>
@@ -88,17 +112,25 @@ export default function HomeScreen() {
 
       {/* Ana buton */}
       <Pressable
-        style={[styles.mainButton, SHADOW.medium]}
+        style={[styles.mainButton, SHADOW.medium, completedCount >= 29 && { backgroundColor: COLORS.accent }]}
+        accessibilityRole="button"
+        accessibilityLabel={completedCount >= 29 ? 'Oyun oyna' : 'Öğrenmeye başla'}
         onPress={() => {
           if (nextLetterToLearn) {
             router.push(`/letter/${nextLetterToLearn.id}`);
           } else {
-            router.push('/(tabs)/letters');
+            router.push('/(tabs)/games');
           }
         }}
       >
-        <FontAwesome name="play-circle" size={SIZES.iconXl} color={COLORS.textWhite} />
-        <Text style={styles.mainButtonText}>Öğrenmeye Başla!</Text>
+        <FontAwesome
+          name={completedCount >= 29 ? 'gamepad' : 'play-circle'}
+          size={SIZES.iconXl}
+          color={completedCount >= 29 ? COLORS.text : COLORS.textWhite}
+        />
+        <Text style={[styles.mainButtonText, completedCount >= 29 && { color: COLORS.text }]}>
+          {completedCount >= 29 ? 'Oyun Oyna!' : 'Öğrenmeye Başla!'}
+        </Text>
       </Pressable>
     </View>
   );
@@ -124,12 +156,12 @@ const styles = StyleSheet.create({
   greeting: {
     fontSize: FONTS.sizeLg,
     color: COLORS.textLight,
-    fontWeight: FONTS.weightMedium,
+    fontFamily: FONTS.familyBold,
   },
   name: {
     fontSize: FONTS.sizeXl,
     color: COLORS.text,
-    fontWeight: FONTS.weightBold,
+    fontFamily: FONTS.familyBold,
   },
   statsRow: {
     flexDirection: 'row',
@@ -147,12 +179,34 @@ const styles = StyleSheet.create({
   },
   statNumber: {
     fontSize: FONTS.sizeLg,
-    fontWeight: FONTS.weightBold,
+    fontFamily: FONTS.familyBold,
     color: COLORS.text,
   },
   statLabel: {
     fontSize: FONTS.sizeXs,
     color: COLORS.textLight,
+  },
+  congratsCard: {
+    alignItems: 'center',
+    backgroundColor: COLORS.accentLight,
+    borderRadius: SIZES.radiusMd,
+    padding: SIZES.paddingLg,
+    marginBottom: SIZES.paddingMd,
+    gap: SIZES.paddingSm,
+  },
+  congratsEmoji: {
+    fontSize: 48,
+  },
+  congratsTitle: {
+    fontSize: FONTS.sizeLg,
+    fontFamily: FONTS.familyBlack,
+    color: COLORS.text,
+    textAlign: 'center',
+  },
+  congratsSubtitle: {
+    fontSize: FONTS.sizeSm,
+    color: COLORS.textLight,
+    textAlign: 'center',
   },
   todayCard: {
     flexDirection: 'row',
@@ -174,7 +228,7 @@ const styles = StyleSheet.create({
   },
   todayLetter: {
     fontSize: FONTS.sizeXxl,
-    fontWeight: FONTS.weightBlack,
+    fontFamily: FONTS.familyBlack,
   },
   todayRight: {
     alignItems: 'center',
@@ -183,7 +237,7 @@ const styles = StyleSheet.create({
   todayWord: {
     fontSize: FONTS.sizeMd,
     color: COLORS.text,
-    fontWeight: FONTS.weightMedium,
+    fontFamily: FONTS.familyBold,
   },
   reviewCard: {
     flexDirection: 'row',
@@ -200,7 +254,7 @@ const styles = StyleSheet.create({
   },
   reviewTitle: {
     fontSize: FONTS.sizeMd,
-    fontWeight: FONTS.weightBold,
+    fontFamily: FONTS.familyBold,
     color: COLORS.text,
   },
   reviewSubtitle: {
@@ -222,7 +276,7 @@ const styles = StyleSheet.create({
   },
   mainButtonText: {
     fontSize: FONTS.sizeLg,
-    fontWeight: FONTS.weightBold,
+    fontFamily: FONTS.familyBold,
     color: COLORS.textWhite,
   },
 });

@@ -26,7 +26,12 @@ function MascotCard({
   }));
 
   return (
-    <Pressable onPress={onSelect}>
+    <Pressable
+      onPress={onSelect}
+      accessibilityLabel={`${mascot.name} maskotu${selected ? ', seçili' : ''}`}
+      accessibilityRole="radio"
+      accessibilityState={{ selected }}
+    >
       <Animated.View
         style={[
           styles.mascotCard,
@@ -36,7 +41,7 @@ function MascotCard({
         ]}
       >
         <Text style={styles.mascotEmoji}>{mascot.emoji}</Text>
-        <Text style={[styles.mascotName, selected && { color: mascot.color, fontWeight: FONTS.weightBold }]}>
+        <Text style={[styles.mascotName, selected && { color: mascot.color, fontFamily: FONTS.familyBold }]}>
           {mascot.name}
         </Text>
       </Animated.View>
@@ -58,7 +63,7 @@ export default function OnboardingScreen() {
     isEditMode && profile ? (profile.avatar as MascotId) : 'owl'
   );
 
-  const mascot = MASCOTS[selectedMascot];
+  const mascot = MASCOTS[selectedMascot] ?? MASCOTS.owl;
   const canStart = name.trim().length > 0;
 
   const handleStart = () => {
@@ -84,7 +89,7 @@ export default function OnboardingScreen() {
       >
         {/* Geri butonu (edit modunda) */}
         {isEditMode && (
-          <Pressable style={styles.backButton} onPress={() => router.back()}>
+          <Pressable style={styles.backButton} onPress={() => router.back()} accessibilityLabel="Geri" accessibilityRole="button">
             <FontAwesome name="arrow-left" size={SIZES.iconMd} color={COLORS.text} />
           </Pressable>
         )}
@@ -105,11 +110,12 @@ export default function OnboardingScreen() {
           placeholder="Adını yaz..."
           placeholderTextColor={COLORS.textLight}
           value={name}
-          onChangeText={setName}
+          onChangeText={(text) => setName(text.replace(/[^\p{L}\s]/gu, ''))}
           maxLength={20}
           autoFocus={!isEditMode}
           returnKeyType="done"
           onSubmitEditing={handleStart}
+          accessibilityLabel="Adını yaz"
         />
 
         {/* Maskot secimi */}
@@ -135,6 +141,9 @@ export default function OnboardingScreen() {
           ]}
           onPress={handleStart}
           disabled={!canStart}
+          accessibilityLabel={isEditMode ? 'Kaydet' : 'Başla'}
+          accessibilityRole="button"
+          accessibilityState={{ disabled: !canStart }}
         >
           <Text style={styles.startButtonText}>{isEditMode ? 'Kaydet' : 'Başla!'}</Text>
           <FontAwesome name="arrow-right" size={SIZES.iconSm} color={COLORS.textWhite} />
@@ -168,7 +177,7 @@ const styles = StyleSheet.create({
   },
   welcome: {
     fontSize: FONTS.sizeXxl,
-    fontWeight: FONTS.weightBlack,
+    fontFamily: FONTS.familyBlack,
   },
   subtitle: {
     fontSize: FONTS.sizeMd,
@@ -178,7 +187,7 @@ const styles = StyleSheet.create({
   },
   question: {
     fontSize: FONTS.sizeLg,
-    fontWeight: FONTS.weightBold,
+    fontFamily: FONTS.familyBold,
     color: COLORS.text,
     marginTop: SIZES.paddingSm,
   },
@@ -189,7 +198,7 @@ const styles = StyleSheet.create({
     paddingVertical: SIZES.paddingMd,
     paddingHorizontal: SIZES.paddingLg,
     fontSize: FONTS.sizeLg,
-    fontWeight: FONTS.weightMedium,
+    fontFamily: FONTS.familyBold,
     color: COLORS.text,
     textAlign: 'center',
     borderWidth: 2,
@@ -221,7 +230,7 @@ const styles = StyleSheet.create({
   mascotName: {
     fontSize: FONTS.sizeSm,
     color: COLORS.textLight,
-    fontWeight: FONTS.weightMedium,
+    fontFamily: FONTS.familyBold,
   },
   startButton: {
     flexDirection: 'row',
@@ -240,7 +249,7 @@ const styles = StyleSheet.create({
   },
   startButtonText: {
     fontSize: FONTS.sizeLg,
-    fontWeight: FONTS.weightBold,
+    fontFamily: FONTS.familyBold,
     color: COLORS.textWhite,
   },
 });

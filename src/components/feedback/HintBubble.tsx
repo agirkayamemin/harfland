@@ -89,7 +89,7 @@ export function HintBubble({
   if (!isVisible) return null;
 
   return (
-    <Animated.View style={[styles.container, SHADOW.medium, animatedStyle]}>
+    <Animated.View style={[styles.container, SHADOW.medium, animatedStyle]} accessibilityLiveRegion="polite" accessibilityRole="alert" accessible={true}>
       <View style={styles.iconContainer}>
         <FontAwesome name="lightbulb-o" size={SIZES.iconMd} color={COLORS.warning} />
       </View>
@@ -119,7 +119,7 @@ const styles = StyleSheet.create({
   hintText: {
     flex: 1,
     fontSize: FONTS.sizeMd,
-    fontWeight: FONTS.weightMedium,
+    fontFamily: FONTS.familyBold,
     color: COLORS.text,
   },
   arrow: {

@@ -28,7 +28,7 @@ export const LETTER_EMOJI: Record<string, string> = {
   C: '🦌', // Ceylan
   H: '🥕', // Havuç
   F: '🐘', // Fil
-  V: '🚢', // Vapur
+  V: '⛴️', // Vapur
   Ğ: '🏔️', // Dağ
-  J: '🃏', // Jilet (joker kart)
+  J: '🐆', // Jaguar
 };

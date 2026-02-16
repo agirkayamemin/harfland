@@ -20,7 +20,7 @@ const GAMES: GameInfo[] = [
     type: 'balloon',
     title: 'Harf Balonu',
     icon: 'certificate',
-    color: '#FF6B6B',
+    color: '#C62828',
     description: 'Söylenen harfi patla!',
     minUnlockedLetters: 3,
   },
@@ -28,7 +28,7 @@ const GAMES: GameInfo[] = [
     type: 'memory',
     title: 'Hafıza Kartları',
     icon: 'th-large',
-    color: '#4ECDC4',
+    color: '#00838F',
     description: 'Harf ve resmi eşleştir',
     minUnlockedLetters: 4,
   },
@@ -36,7 +36,7 @@ const GAMES: GameInfo[] = [
     type: 'missing',
     title: 'Eksik Harf',
     icon: 'puzzle-piece',
-    color: '#45B7D1',
+    color: '#0277BD',
     description: 'Kelimeye doğru harfi koy',
     minUnlockedLetters: 6,
   },
@@ -44,7 +44,7 @@ const GAMES: GameInfo[] = [
     type: 'train',
     title: 'Harf Treni',
     icon: 'train',
-    color: '#96CEB4',
+    color: '#2E7D32',
     description: 'Harfleri sırala, kelime yap',
     minUnlockedLetters: 6,
   },
@@ -52,9 +52,17 @@ const GAMES: GameInfo[] = [
     type: 'sound',
     title: 'Ses Avcısı',
     icon: 'music',
-    color: '#DDA0DD',
+    color: '#7B1FA2',
     description: 'Sese uygun resmi bul',
     minUnlockedLetters: 5,
+  },
+  {
+    type: 'coloring',
+    title: 'Harf Boyama',
+    icon: 'paint-brush',
+    color: '#D84315',
+    description: 'Harfi boyayarak öğren',
+    minUnlockedLetters: 4,
   },
 ];
 
@@ -74,6 +82,9 @@ function GameCard({ game, unlocked }: { game: GameInfo; unlocked: boolean }) {
         }
       }}
       disabled={!unlocked}
+      accessibilityLabel={`${game.title}${unlocked ? `, ${game.description}` : `, kilitli, ${game.minUnlockedLetters} harf öğren`}`}
+      accessibilityRole="button"
+      accessibilityState={{ disabled: !unlocked }}
     >
       <View style={[styles.gameIconContainer, { backgroundColor: unlocked ? game.color : COLORS.locked }]}>
         <FontAwesome
@@ -134,7 +145,7 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: FONTS.sizeXl,
-    fontWeight: FONTS.weightBold,
+    fontFamily: FONTS.familyBold,
     color: COLORS.text,
   },
   subtitle: {
@@ -170,7 +181,7 @@ const styles = StyleSheet.create({
   },
   gameTitle: {
     fontSize: FONTS.sizeMd,
-    fontWeight: FONTS.weightBold,
+    fontFamily: FONTS.familyBold,
     color: COLORS.text,
   },
   gameDescription: {

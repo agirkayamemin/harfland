@@ -69,8 +69,10 @@ export function EncouragementText({ type, visible }: EncouragementTextProps) {
       style={[
         styles.text,
         animatedStyle,
-        { color: type === 'success' ? COLORS.success : COLORS.warning },
+        { color: type === 'success' ? COLORS.successText : COLORS.warningText },
       ]}
+      accessibilityLiveRegion="assertive"
+      accessibilityRole="alert"
     >
       {message}
     </Animated.Text>
@@ -80,7 +82,7 @@ export function EncouragementText({ type, visible }: EncouragementTextProps) {
 const styles = StyleSheet.create({
   text: {
     fontSize: FONTS.sizeXl,
-    fontWeight: FONTS.weightBlack,
+    fontFamily: FONTS.familyBlack,
     textAlign: 'center',
     paddingVertical: SIZES.paddingMd,
   },

@@ -2,7 +2,7 @@ import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { useFonts } from 'expo-font';
 import { Stack, useRouter } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import 'react-native-reanimated';
 import { SessionTimer } from '@/src/components/ui/SessionTimer';
@@ -18,40 +18,53 @@ SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
   const [loaded, error] = useFonts({
-    SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
+    'Nunito-Regular': require('../assets/fonts/Nunito-Regular.ttf'),
+    'Nunito-Bold': require('../assets/fonts/Nunito-Bold.ttf'),
+    'Nunito-ExtraBold': require('../assets/fonts/Nunito-ExtraBold.ttf'),
+    'Nunito-Black': require('../assets/fonts/Nunito-Black.ttf'),
     ...FontAwesome.font,
   });
 
   const router = useRouter();
-  const profile = useProgressStore((s) => s.profile);
-  const startSession = useProgressStore((s) => s.startSession);
-  const initializeLetterProgress = useProgressStore((s) => s.initializeLetterProgress);
-  const letterProgress = useProgressStore((s) => s.letterProgress);
+  const [hydrated, setHydrated] = useState(false);
+
+  // Store hydration'ini bekle
+  useEffect(() => {
+    const unsub = useProgressStore.persist.onFinishHydration(() => {
+      setHydrated(true);
+    });
+    // Zaten hydrate olmussa hemen set et
+    if (useProgressStore.persist.hasHydrated()) {
+      setHydrated(true);
+    }
+    return unsub;
+  }, []);
 
   useEffect(() => {
     if (error) throw error;
   }, [error]);
 
+  // Font + hydration hazir oldugunda baslatma islemleri
   useEffect(() => {
-    if (loaded) {
-      SplashScreen.hideAsync();
+    if (loaded && hydrated) {
+      const state = useProgressStore.getState();
 
-      // Oturumu baslat
-      startSession();
+      SplashScreen.hideAsync();
+      state.startSession();
 
       // Harf ilerlemesi bos ise baslat (ilk acilis)
-      if (Object.keys(letterProgress).length === 0) {
-        initializeLetterProgress();
+      if (Object.keys(state.letterProgress).length === 0) {
+        state.initializeLetterProgress();
       }
 
       // Profil yoksa onboarding'e yonlendir
-      if (!profile) {
+      if (!state.profile) {
         router.replace('/onboarding');
       }
     }
-  }, [loaded]);
+  }, [loaded, hydrated, router]);
 
-  if (!loaded) {
+  if (!loaded || !hydrated) {
     return null;
   }
 

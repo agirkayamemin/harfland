@@ -1,9 +1,10 @@
 // Eksik Harf - Kelimede eksik harfi bul
 // Ornek: _LMA -> E harfini sec
 
-import { useState, useCallback, useMemo, useRef } from 'react';
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { StyleSheet, View, Text, Pressable } from 'react-native';
 import { COLORS, SIZES, FONTS, SHADOW } from '../../constants/theme';
+import { HintBubble } from '../../components/feedback/HintBubble';
 import { ALPHABET, Letter } from '../../data/alphabet';
 import { LETTER_EMOJI } from '../../data/letterEmoji';
 import { useProgressStore } from '../../stores/progressStore';
@@ -20,14 +21,19 @@ function getUnlockedLetters(): Letter[] {
   return ALPHABET.filter((l) => progress[l.id]?.unlocked);
 }
 
-function createQuestion(target: Letter) {
+function createQuestion(target: Letter, unlocked: Letter[]) {
   const word = target.exampleWord.toUpperCase();
-  // Ilk harfi sil
-  const display = '_' + word.slice(1);
   const emoji = LETTER_EMOJI[target.id] ?? '❓';
 
-  // 3 yanlis secenekle karistir
-  const others = ALPHABET.filter((l) => l.id !== target.id)
+  // Hedef harfin kelime icindeki pozisyonunu bul
+  const targetUpper = target.uppercase;
+  const pos = word.indexOf(targetUpper);
+  const display = pos >= 0
+    ? word.slice(0, pos) + '_' + word.slice(pos + targetUpper.length)
+    : '_' + word.slice(1);
+
+  // 3 yanlis secenekle karistir (sadece acik harflerden)
+  const others = unlocked.filter((l) => l.id !== target.id)
     .sort(() => Math.random() - 0.5)
     .slice(0, 3);
 
@@ -38,6 +44,7 @@ function createQuestion(target: Letter) {
 
 export function MissingLetterGame({ onGameEnd }: MissingLetterGameProps) {
   const { playEffect } = useAudio();
+  const [lastActivity, setLastActivity] = useState(Date.now());
   const letters = useMemo(() => {
     const unlocked = getUnlockedLetters();
     return unlocked.sort(() => Math.random() - 0.5).slice(0, ROUND_COUNT);
@@ -48,14 +55,20 @@ export function MissingLetterGame({ onGameEnd }: MissingLetterGameProps) {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [isCorrect, setIsCorrect] = useState<boolean | null>(null);
   const scoreRef = useRef(0);
+  const timerRef = useRef<ReturnType<typeof setTimeout>>(undefined);
+
+  useEffect(() => () => { clearTimeout(timerRef.current); }, []);
+
+  const allUnlocked = useMemo(() => getUnlockedLetters(), []);
 
   const question = useMemo(() => {
     if (round >= letters.length) return null;
-    return createQuestion(letters[round]);
-  }, [round, letters]);
+    return createQuestion(letters[round], allUnlocked);
+  }, [round, letters, allUnlocked]);
 
   const handleSelect = useCallback(
     (id: string) => {
+      setLastActivity(Date.now());
       if (selectedId || !question) return;
       setSelectedId(id);
 
@@ -69,10 +82,10 @@ export function MissingLetterGame({ onGameEnd }: MissingLetterGameProps) {
         playEffect('wrong');
       }
 
-      setTimeout(() => {
+      timerRef.current = setTimeout(() => {
         const nextRound = round + 1;
         if (nextRound >= letters.length) {
-          onGameEnd(scoreRef.current, ROUND_COUNT);
+          onGameEnd(scoreRef.current, letters.length);
         } else {
           setRound(nextRound);
           setSelectedId(null);
@@ -88,8 +101,8 @@ export function MissingLetterGame({ onGameEnd }: MissingLetterGameProps) {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.scoreText}>{score}/{ROUND_COUNT}</Text>
-        <Text style={styles.roundText}>{round + 1}/{ROUND_COUNT}</Text>
+        <Text style={styles.scoreText}>{score}/{letters.length}</Text>
+        <Text style={styles.roundText}>{round + 1}/{letters.length}</Text>
       </View>
 
       {/* Emoji ve kelime */}
@@ -114,6 +127,8 @@ export function MissingLetterGame({ onGameEnd }: MissingLetterGameProps) {
                 isWrong && styles.optionWrong,
               ]}
               onPress={() => handleSelect(opt.id)}
+              accessibilityLabel={`${opt.uppercase} harfi`}
+              accessibilityRole="button"
             >
               <Text
                 style={[
@@ -128,11 +143,13 @@ export function MissingLetterGame({ onGameEnd }: MissingLetterGameProps) {
         })}
       </View>
 
+      <HintBubble hint="Kelimede eksik olan harfi seç!" activityTimestamp={lastActivity} />
+
       {isCorrect === true && (
-        <Text style={styles.feedbackCorrect}>Harika!</Text>
+        <Text style={styles.feedbackCorrect} accessibilityLiveRegion="polite">Harika!</Text>
       )}
       {isCorrect === false && (
-        <Text style={styles.feedbackWrong}>Olmadı, tekrar dene!</Text>
+        <Text style={styles.feedbackWrong} accessibilityLiveRegion="polite">Tekrar dene!</Text>
       )}
     </View>
   );
@@ -155,7 +172,7 @@ const styles = StyleSheet.create({
   },
   scoreText: {
     fontSize: FONTS.sizeMd,
-    fontWeight: FONTS.weightBold,
+    fontFamily: FONTS.familyBold,
     color: COLORS.text,
   },
   roundText: {
@@ -167,14 +184,14 @@ const styles = StyleSheet.create({
   },
   word: {
     fontSize: FONTS.sizeXxl,
-    fontWeight: FONTS.weightBlack,
+    fontFamily: FONTS.familyBlack,
     color: COLORS.text,
     letterSpacing: 8,
   },
   hint: {
     fontSize: FONTS.sizeMd,
     color: COLORS.textLight,
-    fontWeight: FONTS.weightMedium,
+    fontFamily: FONTS.familyBold,
   },
   optionsRow: {
     flexDirection: 'row',
@@ -201,16 +218,16 @@ const styles = StyleSheet.create({
   },
   optionLetter: {
     fontSize: FONTS.sizeXl,
-    fontWeight: FONTS.weightBlack,
+    fontFamily: FONTS.familyBlack,
   },
   feedbackCorrect: {
     fontSize: FONTS.sizeLg,
-    fontWeight: FONTS.weightBold,
-    color: COLORS.success,
+    fontFamily: FONTS.familyBold,
+    color: COLORS.successText,
   },
   feedbackWrong: {
     fontSize: FONTS.sizeLg,
-    fontWeight: FONTS.weightBold,
-    color: COLORS.warning,
+    fontFamily: FONTS.familyBold,
+    color: COLORS.warningText,
   },
 });

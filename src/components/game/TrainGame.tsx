@@ -2,7 +2,7 @@
 // Cocuk harflere sirayla dokunarak vagonu doldurur
 // minUnlockedLetters: 6
 
-import { useState, useCallback, useMemo, useRef } from 'react';
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { StyleSheet, View, Text, Pressable } from 'react-native';
 import Animated, {
   useSharedValue,
@@ -11,6 +11,7 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 import { COLORS, SIZES, FONTS, SHADOW } from '../../constants/theme';
+import { HintBubble } from '../../components/feedback/HintBubble';
 import { ALPHABET, Letter } from '../../data/alphabet';
 import { TRAIN_WORDS, TrainWord } from '../../data/trainWords';
 import { useProgressStore } from '../../stores/progressStore';
@@ -52,9 +53,11 @@ interface WagonProps {
 function Wagon({ letter, color, filled }: WagonProps) {
   const scale = useSharedValue(filled ? 0.5 : 1);
 
-  if (filled) {
-    scale.value = withSpring(1, { damping: 8, stiffness: 200 });
-  }
+  useEffect(() => {
+    if (filled) {
+      scale.value = withSpring(1, { damping: 8, stiffness: 200 });
+    }
+  }, [filled]);
 
   const animStyle = useAnimatedStyle(() => ({
     transform: [{ scale: scale.value }],
@@ -89,10 +92,12 @@ interface LetterButtonProps {
 function LetterButton({ letter, color, used, wrong, onPress }: LetterButtonProps) {
   const shakeX = useSharedValue(0);
 
-  if (wrong) {
-    shakeX.value = withSpring(0, { damping: 3, stiffness: 400 });
-    shakeX.value = 8;
-  }
+  useEffect(() => {
+    if (wrong) {
+      shakeX.value = 8;
+      shakeX.value = withSpring(0, { damping: 3, stiffness: 400 });
+    }
+  }, [wrong]);
 
   const animStyle = useAnimatedStyle(() => ({
     transform: [{ translateX: shakeX.value }],
@@ -108,6 +113,9 @@ function LetterButton({ letter, color, used, wrong, onPress }: LetterButtonProps
         ]}
         onPress={onPress}
         disabled={used}
+        accessibilityLabel={`${letter} harfi`}
+        accessibilityRole="button"
+        accessibilityState={{ disabled: used }}
       >
         <Text style={[styles.letterButtonText, { color: used ? COLORS.textLight : color }]}>
           {letter}
@@ -119,6 +127,7 @@ function LetterButton({ letter, color, used, wrong, onPress }: LetterButtonProps
 
 export function TrainGame({ onGameEnd }: TrainGameProps) {
   const { playEffect } = useAudio();
+  const [lastActivity, setLastActivity] = useState(Date.now());
   const unlockedLetters = useMemo(() => getUnlockedLetters(), []);
   const unlockedIds = useMemo(() => new Set(unlockedLetters.map((l) => l.id)), [unlockedLetters]);
 
@@ -141,6 +150,13 @@ export function TrainGame({ onGameEnd }: TrainGameProps) {
   const [wrongIndex, setWrongIndex] = useState<number | null>(null);
   const [feedback, setFeedback] = useState<string | null>(null);
   const scoreRef = useRef(0);
+  const timerRef = useRef<ReturnType<typeof setTimeout>>(undefined);
+  const wrongTimerRef = useRef<ReturnType<typeof setTimeout>>(undefined);
+
+  useEffect(() => () => {
+    clearTimeout(timerRef.current);
+    clearTimeout(wrongTimerRef.current);
+  }, []);
 
   const currentWord = rounds[round];
 
@@ -160,6 +176,7 @@ export function TrainGame({ onGameEnd }: TrainGameProps) {
 
   const handleLetterPress = useCallback(
     (index: number) => {
+      setLastActivity(Date.now());
       if (!currentWord || usedIndices.has(index)) return;
 
       const pressed = letterOptions[index];
@@ -181,7 +198,7 @@ export function TrainGame({ onGameEnd }: TrainGameProps) {
           setScore(scoreRef.current);
           setFeedback('Harika!');
 
-          setTimeout(() => {
+          timerRef.current = setTimeout(() => {
             const nextRound = round + 1;
             if (nextRound >= ROUND_COUNT) {
               onGameEnd(scoreRef.current, ROUND_COUNT);
@@ -201,7 +218,7 @@ export function TrainGame({ onGameEnd }: TrainGameProps) {
         setWrongTaps((prev) => prev + 1);
         setWrongIndex(index);
         setFeedback('Tekrar dene!');
-        setTimeout(() => {
+        wrongTimerRef.current = setTimeout(() => {
           setWrongIndex(null);
           setFeedback(null);
         }, 600);
@@ -259,13 +276,15 @@ export function TrainGame({ onGameEnd }: TrainGameProps) {
         ))}
       </View>
 
+      <HintBubble hint="Doğru harfe dokunarak kelimeyi tamamla!" activityTimestamp={lastActivity} />
+
       {/* Geri bildirim */}
       {feedback && (
-        <View style={styles.feedbackOverlay}>
+        <View style={styles.feedbackOverlay} accessibilityLiveRegion="polite">
           <Text
             style={[
               styles.feedbackText,
-              { color: feedback === 'Harika!' ? COLORS.success : COLORS.warning },
+              { color: feedback === 'Harika!' ? COLORS.successText : COLORS.warningText },
             ]}
           >
             {feedback}
@@ -293,7 +312,7 @@ const styles = StyleSheet.create({
   },
   scoreText: {
     fontSize: FONTS.sizeMd,
-    fontWeight: FONTS.weightBold,
+    fontFamily: FONTS.familyBold,
     color: COLORS.text,
   },
   roundText: {
@@ -305,7 +324,7 @@ const styles = StyleSheet.create({
   },
   wordRef: {
     fontSize: FONTS.sizeLg,
-    fontWeight: FONTS.weightBold,
+    fontFamily: FONTS.familyBold,
     color: COLORS.textLight,
     letterSpacing: 6,
   },
@@ -324,7 +343,7 @@ const styles = StyleSheet.create({
   },
   wagonLetter: {
     fontSize: FONTS.sizeXl,
-    fontWeight: FONTS.weightBlack,
+    fontFamily: FONTS.familyBlack,
   },
   lettersRow: {
     flexDirection: 'row',
@@ -349,7 +368,7 @@ const styles = StyleSheet.create({
   },
   letterButtonText: {
     fontSize: FONTS.sizeXl,
-    fontWeight: FONTS.weightBlack,
+    fontFamily: FONTS.familyBlack,
   },
   emptyText: {
     fontSize: FONTS.sizeMd,
@@ -364,7 +383,7 @@ const styles = StyleSheet.create({
   },
   feedbackText: {
     fontSize: FONTS.sizeLg,
-    fontWeight: FONTS.weightBlack,
+    fontFamily: FONTS.familyBlack,
     backgroundColor: COLORS.backgroundCard,
     paddingHorizontal: SIZES.paddingXl,
     paddingVertical: SIZES.paddingMd,

@@ -5,7 +5,7 @@ import { StyleSheet, View, Text, Pressable, Dimensions } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
-import { COLORS, SIZES, FONTS, SHADOW } from '@/src/constants/theme';
+import { COLORS, SIZES, FONTS, SHADOW, GROUP_COLORS_DARK } from '@/src/constants/theme';
 import { getLetterById } from '@/src/data/alphabet';
 import { getTracePathById } from '@/src/data/tracePaths';
 import { LetterTraceCanvas, getDrawnStrokes, resetTracePoints } from '@/src/components/letter/LetterTraceCanvas';
@@ -102,7 +102,7 @@ export default function TraceScreen() {
 
       {/* Ust bar */}
       <View style={styles.topBar}>
-        <Pressable style={styles.backButton} onPress={() => router.back()}>
+        <Pressable style={styles.backButton} onPress={() => router.back()} accessibilityLabel="Geri" accessibilityRole="button">
           <FontAwesome name="arrow-left" size={SIZES.iconMd} color={COLORS.text} />
         </Pressable>
         <Text style={[styles.title, { color: letter.color }]}>
@@ -135,8 +135,10 @@ export default function TraceScreen() {
       {traceState === 'drawing' && (
         <View style={styles.checkContainer}>
           <Pressable
-            style={[styles.checkButton, SHADOW.medium, { backgroundColor: letter.color }]}
+            style={[styles.checkButton, SHADOW.medium, { backgroundColor: GROUP_COLORS_DARK[letter.group] }]}
             onPress={handleCheck}
+            accessibilityLabel="Kontrol et"
+            accessibilityRole="button"
           >
             <FontAwesome name="check-circle" size={SIZES.iconMd} color={COLORS.textWhite} />
             <Text style={styles.checkButtonText}>Kontrol Et</Text>
@@ -156,8 +158,10 @@ export default function TraceScreen() {
 
           <View style={styles.buttonRow}>
             <Pressable
-              style={[styles.actionButton, { backgroundColor: letter.color }]}
+              style={[styles.actionButton, { backgroundColor: GROUP_COLORS_DARK[letter.group] }]}
               onPress={handleRetry}
+              accessibilityLabel="Tekrar yaz"
+              accessibilityRole="button"
             >
               <FontAwesome name="repeat" size={SIZES.iconSm} color={COLORS.textWhite} />
               <Text style={styles.actionButtonText}>Tekrar Yaz</Text>
@@ -165,6 +169,8 @@ export default function TraceScreen() {
             <Pressable
               style={[styles.actionButton, { backgroundColor: COLORS.success }]}
               onPress={() => router.back()}
+              accessibilityLabel="Devam et"
+              accessibilityRole="button"
             >
               <FontAwesome name="check" size={SIZES.iconSm} color={COLORS.textWhite} />
               <Text style={styles.actionButtonText}>Devam Et</Text>
@@ -181,6 +187,8 @@ export default function TraceScreen() {
           <Pressable
             style={[styles.retryButton, SHADOW.small, { borderColor: letter.color }]}
             onPress={handleRetry}
+            accessibilityLabel="Tekrar dene"
+            accessibilityRole="button"
           >
             <FontAwesome name="repeat" size={SIZES.iconMd} color={letter.color} />
             <Text style={[styles.retryButtonText, { color: letter.color }]}>Tekrar Dene</Text>
@@ -211,7 +219,7 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: FONTS.sizeLg,
-    fontWeight: FONTS.weightBold,
+    fontFamily: FONTS.familyBold,
   },
   attemptBadge: {
     width: SIZES.touchableMin / 2,
@@ -223,7 +231,7 @@ const styles = StyleSheet.create({
   },
   attemptText: {
     fontSize: FONTS.sizeSm,
-    fontWeight: FONTS.weightBold,
+    fontFamily: FONTS.familyBold,
     color: COLORS.textLight,
   },
   strokeHint: {
@@ -254,7 +262,7 @@ const styles = StyleSheet.create({
   },
   checkButtonText: {
     fontSize: FONTS.sizeLg,
-    fontWeight: FONTS.weightBold,
+    fontFamily: FONTS.familyBold,
     color: COLORS.textWhite,
   },
   resultContainer: {
@@ -280,7 +288,7 @@ const styles = StyleSheet.create({
   },
   actionButtonText: {
     fontSize: FONTS.sizeMd,
-    fontWeight: FONTS.weightBold,
+    fontFamily: FONTS.familyBold,
     color: COLORS.textWhite,
   },
   retryButton: {
@@ -298,7 +306,7 @@ const styles = StyleSheet.create({
   },
   retryButtonText: {
     fontSize: FONTS.sizeMd,
-    fontWeight: FONTS.weightBold,
+    fontFamily: FONTS.familyBold,
   },
   errorText: {
     fontSize: FONTS.sizeMd,

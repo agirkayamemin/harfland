@@ -21,8 +21,11 @@ export const COLORS = {
   // Geri bildirim renkleri
   success: '#81C784',       // Yumusak yesil - dogru cevap
   successLight: '#C8E6C9',  // Mint yesili
+  successText: '#2E7D32',   // Koyu yesil - metin icin (~5.5:1 beyaz uzerinde)
   warning: '#FFA726',       // Yumusak turuncu - yanlis cevap (kirmizi yerine)
   warningLight: '#FFE0B2',  // Acik turuncu
+  warningText: '#E65100',   // Koyu turuncu - metin icin (~5.0:1 beyaz uzerinde)
+  primaryText: '#0277BD',   // Koyu mavi - metin icin (~5.3:1 beyaz uzerinde)
 
   // Arka plan
   background: '#FFF8E1',    // Sicak beyaz (saf beyaz degil)
@@ -53,13 +56,25 @@ export const GROUP_COLORS = {
   8: '#F06292', // Grup 8 - Zor harfler (C, H, F, V, Ğ, J) - Pembe
 } as const;
 
-// Maskot secenekleri
+// Her harf grubunun koyu rengi (buton arka plani ve metin icin yuksek kontrast)
+export const GROUP_COLORS_DARK = {
+  1: '#C62828', // Koyu kirmizi
+  2: '#0277BD', // Koyu mavi
+  3: '#D84315', // Koyu turuncu
+  4: '#2E7D32', // Koyu yesil
+  5: '#F57F17', // Koyu amber
+  6: '#7B1FA2', // Koyu mor
+  7: '#00838F', // Koyu turkuaz
+  8: '#C2185B', // Koyu pembe
+} as const;
+
+// Maskot secenekleri (koyu renkler - beyaz metin icin yuksek kontrast)
 export const MASCOTS = {
-  owl: { emoji: '🦉', name: 'Puhu', color: '#FF8A65' },
-  cat: { emoji: '🐱', name: 'Minnak', color: '#BA68C8' },
-  dog: { emoji: '🐶', name: 'Ponçik', color: '#4FC3F7' },
-  panda: { emoji: '🐼', name: 'Bambu', color: '#81C784' },
-  monkey: { emoji: '🐵', name: 'Ciki', color: '#FFD54F' },
+  owl: { emoji: '🦉', name: 'Puhu', color: '#D84315' },
+  cat: { emoji: '🐱', name: 'Minnak', color: '#7B1FA2' },
+  dog: { emoji: '🐶', name: 'Ponçik', color: '#0277BD' },
+  panda: { emoji: '🐼', name: 'Bambu', color: '#2E7D32' },
+  monkey: { emoji: '🐵', name: 'Ciki', color: '#F57F17' },
 } as const;
 
 export type MascotId = keyof typeof MASCOTS;
@@ -103,6 +118,12 @@ export const SIZES = {
 
 // Font boyutlari - cocuk UX: buyuk ve kalin fontlar
 export const FONTS = {
+  // Nunito font ailesi (cocuk dostu, yuvarlak hatli)
+  family: 'Nunito-Regular',
+  familyBold: 'Nunito-Bold',
+  familyExtraBold: 'Nunito-ExtraBold',
+  familyBlack: 'Nunito-Black',
+
   sizeXs: 14,
   sizeSm: 18,
   sizeMd: 22,

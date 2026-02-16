@@ -67,6 +67,10 @@ export const useSettingsStore = create<SettingsState>()(
     {
       name: 'harfland-settings',
       storage: createJSONStorage(() => AsyncStorage),
+      partialize: (state) => {
+        const { parentGateUnlocked, ...rest } = state;
+        return rest;
+      },
     }
   )
 );

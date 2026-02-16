@@ -216,8 +216,8 @@ export const TRACE_PATHS: TracePath[] = [
   {
     letterId: 'Ç',
     strokes: [
-      { d: 'M 170,60 C 170,20 130,20 100,20 C 60,20 30,40 30,100 C 30,160 60,180 100,180 C 130,180 170,180 170,140', direction: 'curve', startPoint: { x: 170, y: 60 } },
-      { d: 'M 90,180 C 90,190 100,200 80,200', direction: 'curve', startPoint: { x: 90, y: 180 } },
+      { d: 'M 170,55 C 170,20 130,15 100,15 C 60,15 30,35 30,95 C 30,155 60,175 100,175 C 130,175 170,175 170,135', direction: 'curve', startPoint: { x: 170, y: 55 } },
+      { d: 'M 100,175 L 100,185 C 100,195 95,200 80,200 L 75,200', direction: 'curve', startPoint: { x: 100, y: 175 } },
     ],
     boundingBox: { width: 170, height: 200 },
     difficulty: 'hard',
@@ -225,8 +225,8 @@ export const TRACE_PATHS: TracePath[] = [
   {
     letterId: 'Ş',
     strokes: [
-      { d: 'M 150,50 C 150,20 100,20 80,20 C 40,20 20,40 20,65 C 20,90 40,100 100,110 C 160,120 180,130 180,155 C 180,175 150,180 120,180 C 80,180 50,180 50,155', direction: 'curve', startPoint: { x: 150, y: 50 } },
-      { d: 'M 90,180 C 90,190 100,200 80,200', direction: 'curve', startPoint: { x: 90, y: 180 } },
+      { d: 'M 150,45 C 150,15 100,15 80,15 C 40,15 20,35 20,60 C 20,85 40,95 100,105 C 160,115 180,125 180,150 C 180,170 150,175 120,175 C 80,175 50,175 50,150', direction: 'curve', startPoint: { x: 150, y: 45 } },
+      { d: 'M 100,175 L 100,185 C 100,195 95,200 80,200 L 75,200', direction: 'curve', startPoint: { x: 100, y: 175 } },
     ],
     boundingBox: { width: 180, height: 200 },
     difficulty: 'hard',

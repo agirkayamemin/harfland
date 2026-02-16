@@ -2,9 +2,10 @@
 // Hedef harfle baslayan resmi/emojiyi bul
 // minUnlockedLetters: 5
 
-import { useState, useCallback, useMemo, useRef } from 'react';
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { StyleSheet, View, Text, Pressable } from 'react-native';
 import { COLORS, SIZES, FONTS, SHADOW } from '../../constants/theme';
+import { HintBubble } from '../../components/feedback/HintBubble';
 import { ALPHABET, Letter } from '../../data/alphabet';
 import { LETTER_EMOJI } from '../../data/letterEmoji';
 import { useProgressStore } from '../../stores/progressStore';
@@ -57,6 +58,7 @@ function buildRounds(unlocked: Letter[]): RoundData[] {
 
 export function SoundGame({ onGameEnd }: SoundGameProps) {
   const { playEffect, playLetterSound } = useAudio();
+  const [lastActivity, setLastActivity] = useState(Date.now());
   const rounds = useMemo(() => {
     const unlocked = getUnlockedLetters();
     return buildRounds(unlocked);
@@ -67,11 +69,15 @@ export function SoundGame({ onGameEnd }: SoundGameProps) {
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
   const [isCorrect, setIsCorrect] = useState<boolean | null>(null);
   const scoreRef = useRef(0);
+  const timerRef = useRef<ReturnType<typeof setTimeout>>(undefined);
+
+  useEffect(() => () => { clearTimeout(timerRef.current); }, []);
 
   const currentRound = rounds[round];
 
   const handleSelect = useCallback(
     (index: number) => {
+      setLastActivity(Date.now());
       if (selectedIndex !== null || !currentRound) return;
       setSelectedIndex(index);
 
@@ -85,7 +91,7 @@ export function SoundGame({ onGameEnd }: SoundGameProps) {
         playEffect('wrong');
       }
 
-      setTimeout(() => {
+      timerRef.current = setTimeout(() => {
         const nextRound = round + 1;
         if (nextRound >= ROUND_COUNT) {
           onGameEnd(scoreRef.current, ROUND_COUNT);
@@ -94,7 +100,7 @@ export function SoundGame({ onGameEnd }: SoundGameProps) {
           setSelectedIndex(null);
           setIsCorrect(null);
         }
-      }, isCorrect === null && index === currentRound.correctIndex ? 1000 : 1200);
+      }, index === currentRound.correctIndex ? 1000 : 1200);
     },
     [selectedIndex, currentRound, round, onGameEnd]
   );
@@ -139,6 +145,9 @@ export function SoundGame({ onGameEnd }: SoundGameProps) {
               ]}
               onPress={() => handleSelect(i)}
               disabled={selectedIndex !== null}
+              accessibilityLabel={`${opt.letter.exampleWord}`}
+              accessibilityRole="button"
+              accessibilityState={{ disabled: selectedIndex !== null }}
             >
               <Text style={styles.emojiText}>{opt.emoji}</Text>
               {/* Dogru secimde kelime goster */}
@@ -150,12 +159,14 @@ export function SoundGame({ onGameEnd }: SoundGameProps) {
         })}
       </View>
 
+      <HintBubble hint="Sesi dinle ve doğru resme dokun!" activityTimestamp={lastActivity} />
+
       {/* Geri bildirim */}
       {isCorrect === true && (
-        <Text style={styles.feedbackCorrect}>Harika!</Text>
+        <Text style={styles.feedbackCorrect} accessibilityLiveRegion="polite">Harika!</Text>
       )}
       {isCorrect === false && (
-        <Text style={styles.feedbackWrong}>Tekrar dene!</Text>
+        <Text style={styles.feedbackWrong} accessibilityLiveRegion="polite">Tekrar dene!</Text>
       )}
     </View>
   );
@@ -178,7 +189,7 @@ const styles = StyleSheet.create({
   },
   scoreText: {
     fontSize: FONTS.sizeMd,
-    fontWeight: FONTS.weightBold,
+    fontFamily: FONTS.familyBold,
     color: COLORS.text,
   },
   roundText: {
@@ -194,12 +205,12 @@ const styles = StyleSheet.create({
   },
   targetLetter: {
     fontSize: FONTS.sizeXxl,
-    fontWeight: FONTS.weightBlack,
+    fontFamily: FONTS.familyBlack,
   },
   hint: {
     fontSize: FONTS.sizeMd,
     color: COLORS.textLight,
-    fontWeight: FONTS.weightMedium,
+    fontFamily: FONTS.familyBold,
   },
   grid: {
     flexDirection: 'row',
@@ -236,18 +247,18 @@ const styles = StyleSheet.create({
   },
   wordLabel: {
     fontSize: FONTS.sizeSm,
-    fontWeight: FONTS.weightBold,
-    color: COLORS.success,
+    fontFamily: FONTS.familyBold,
+    color: COLORS.successText,
     marginTop: SIZES.paddingXs,
   },
   feedbackCorrect: {
     fontSize: FONTS.sizeLg,
-    fontWeight: FONTS.weightBold,
-    color: COLORS.success,
+    fontFamily: FONTS.familyBold,
+    color: COLORS.successText,
   },
   feedbackWrong: {
     fontSize: FONTS.sizeLg,
-    fontWeight: FONTS.weightBold,
-    color: COLORS.warning,
+    fontFamily: FONTS.familyBold,
+    color: COLORS.warningText,
   },
 });

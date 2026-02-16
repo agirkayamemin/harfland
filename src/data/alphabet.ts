@@ -406,10 +406,10 @@ export const ALPHABET: Letter[] = [
     group: 8,
     type: 'consonant',
     color: GROUP_COLORS[8],
-    exampleWord: 'Jilet',
-    exampleImage: 'jilet',
+    exampleWord: 'Jaguar',
+    exampleImage: 'jaguar',
     audioFile: 'j.mp3',
-    wordAudioFile: 'jilet.mp3',
+    wordAudioFile: 'jaguar.mp3',
     order: 29,
   },
 ];

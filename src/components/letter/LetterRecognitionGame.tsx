@@ -1,7 +1,7 @@
 // Harf Tanima Oyunu - 3 harf arasindan dogru olani sec
 // Asama 2: "E harfini bul!"
 
-import { useState, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { StyleSheet, View, Text, Pressable } from 'react-native';
 import Animated, {
   useSharedValue,
@@ -11,6 +11,7 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 import { COLORS, SIZES, FONTS, SHADOW } from '../../constants/theme';
+import { HintBubble } from '../../components/feedback/HintBubble';
 import { Letter, ALPHABET } from '../../data/alphabet';
 import { LETTER_EMOJI } from '../../data/letterEmoji';
 import { useAudio } from '../../hooks/useAudio';
@@ -37,6 +38,10 @@ export function LetterRecognitionGame({ letter, onComplete }: LetterRecognitionG
 
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [isCorrect, setIsCorrect] = useState<boolean | null>(null);
+  const [lastActivity, setLastActivity] = useState(Date.now());
+  const timerRef = useRef<ReturnType<typeof setTimeout>>(undefined);
+
+  useEffect(() => () => { clearTimeout(timerRef.current); }, []);
 
   const shakeX = useSharedValue(0);
   const successScale = useSharedValue(1);
@@ -47,6 +52,7 @@ export function LetterRecognitionGame({ letter, onComplete }: LetterRecognitionG
 
   const handleSelect = useCallback(
     (selected: Letter) => {
+      setLastActivity(Date.now());
       if (selectedId !== null) return; // Zaten secildi
 
       setSelectedId(selected.id);
@@ -58,7 +64,7 @@ export function LetterRecognitionGame({ letter, onComplete }: LetterRecognitionG
           withSpring(1.2, { damping: 8 }),
           withSpring(1, { damping: 12 })
         );
-        setTimeout(() => onComplete(true), 800);
+        timerRef.current = setTimeout(() => onComplete(true), 800);
       } else {
         setIsCorrect(false);
         playEffect('wrong');
@@ -70,7 +76,7 @@ export function LetterRecognitionGame({ letter, onComplete }: LetterRecognitionG
           withTiming(0, { duration: 50 })
         );
         // Yanlis secimi sifirla, tekrar denesin
-        setTimeout(() => {
+        timerRef.current = setTimeout(() => {
           setSelectedId(null);
           setIsCorrect(null);
         }, 600);
@@ -108,6 +114,8 @@ export function LetterRecognitionGame({ letter, onComplete }: LetterRecognitionG
                 isWrong && styles.optionWrong,
               ]}
               onPress={() => handleSelect(opt)}
+              accessibilityLabel={`${opt.uppercase} harfi`}
+              accessibilityRole="button"
             >
               <Text
                 style={[
@@ -124,11 +132,13 @@ export function LetterRecognitionGame({ letter, onComplete }: LetterRecognitionG
 
       {/* Geri bildirim */}
       {isCorrect === true && (
-        <Text style={styles.feedbackCorrect}>Harika! Doğru buldun!</Text>
+        <Text style={styles.feedbackCorrect} accessibilityLiveRegion="polite">Harika! Doğru buldun!</Text>
       )}
       {isCorrect === false && (
-        <Text style={styles.feedbackWrong}>Tekrar dene!</Text>
+        <Text style={styles.feedbackWrong} accessibilityLiveRegion="polite">Tekrar dene!</Text>
       )}
+
+      <HintBubble hint="Yukarıdaki harfi kartlarda bul!" activityTimestamp={lastActivity} />
     </View>
   );
 }
@@ -142,13 +152,13 @@ const styles = StyleSheet.create({
   },
   question: {
     fontSize: FONTS.sizeLg,
-    fontWeight: FONTS.weightBold,
+    fontFamily: FONTS.familyBold,
     color: COLORS.text,
     textAlign: 'center',
   },
   targetLetter: {
     fontSize: FONTS.sizeXl,
-    fontWeight: FONTS.weightBlack,
+    fontFamily: FONTS.familyBlack,
   },
   emoji: {
     fontSize: 64,
@@ -156,7 +166,7 @@ const styles = StyleSheet.create({
   wordHint: {
     fontSize: FONTS.sizeMd,
     color: COLORS.textLight,
-    fontWeight: FONTS.weightMedium,
+    fontFamily: FONTS.familyBold,
   },
   optionsRow: {
     flexDirection: 'row',
@@ -183,18 +193,18 @@ const styles = StyleSheet.create({
   },
   optionLetter: {
     fontSize: FONTS.sizeXxl,
-    fontWeight: FONTS.weightBlack,
+    fontFamily: FONTS.familyBlack,
   },
   feedbackCorrect: {
     fontSize: FONTS.sizeMd,
-    fontWeight: FONTS.weightBold,
-    color: COLORS.success,
+    fontFamily: FONTS.familyBold,
+    color: COLORS.successText,
     marginTop: SIZES.paddingSm,
   },
   feedbackWrong: {
     fontSize: FONTS.sizeMd,
-    fontWeight: FONTS.weightBold,
-    color: COLORS.warning,
+    fontFamily: FONTS.familyBold,
+    color: COLORS.warningText,
     marginTop: SIZES.paddingSm,
   },
 });

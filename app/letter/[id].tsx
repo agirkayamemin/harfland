@@ -1,7 +1,7 @@
 // Harf Ogrenme Ekrani - 4 asamali ogrenme dongusu
 // Asama 1: Tanitma | Asama 2: Tanima | Asama 3: Yazma | Asama 4: Pratik
 
-import { useState, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { StyleSheet, View, Text, Pressable, ScrollView } from 'react-native';
 import { useLocalSearchParams, useRouter, useFocusEffect } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -12,13 +12,14 @@ import Animated, {
   withSpring,
   withSequence,
 } from 'react-native-reanimated';
-import { COLORS, SIZES, FONTS, SHADOW } from '@/src/constants/theme';
+import { COLORS, SIZES, FONTS, SHADOW, GROUP_COLORS_DARK } from '@/src/constants/theme';
 import { getLetterById } from '@/src/data/alphabet';
 import { LETTER_EMOJI } from '@/src/data/letterEmoji';
 import { LetterRecognitionGame } from '@/src/components/letter/LetterRecognitionGame';
 import { ConfettiAnimation } from '@/src/components/feedback/ConfettiAnimation';
 import { useProgressStore } from '@/src/stores/progressStore';
 import { useAudio } from '@/src/hooks/useAudio';
+import { HintBubble } from '@/src/components/feedback/HintBubble';
 
 type LearningStage = 'introduce' | 'recognize' | 'trace' | 'complete';
 
@@ -35,6 +36,10 @@ export default function LetterScreen() {
 
   const [stage, setStage] = useState<LearningStage>('introduce');
   const [showConfetti, setShowConfetti] = useState(false);
+  const [lastActivity, setLastActivity] = useState(Date.now());
+  const timerRef = useRef<ReturnType<typeof setTimeout>>(undefined);
+
+  useEffect(() => () => { clearTimeout(timerRef.current); }, []);
 
   const letterScale = useSharedValue(0);
 
@@ -43,15 +48,15 @@ export default function LetterScreen() {
   }));
 
   // Harf belirme animasyonu + sesi cal
-  useState(() => {
+  useEffect(() => {
     letterScale.value = withSequence(
       withSpring(1.1, { damping: 8, stiffness: 150 }),
       withSpring(1, { damping: 12 })
     );
     if (letter) {
-      setTimeout(() => playLetterSound(letter.id), 400);
+      timerRef.current = setTimeout(() => playLetterSound(letter.id), 400);
     }
-  });
+  }, []);
 
   const stageIndex = stage === 'introduce' ? 0 : stage === 'recognize' ? 1 : stage === 'trace' ? 2 : 3;
 
@@ -62,7 +67,7 @@ export default function LetterScreen() {
         if (letterProgress && letterProgress.stage < 2) {
           updateLetterStage(letter.id, 2);
         }
-        setTimeout(() => setStage('trace'), 500);
+        timerRef.current = setTimeout(() => setStage('trace'), 500);
       }
     },
     [letter, letterProgress, updateLetterStage]
@@ -93,7 +98,7 @@ export default function LetterScreen() {
       setShowConfetti(true);
       playEffect('confetti');
       updateLetterStage(letter.id, 4, 80);
-      setTimeout(() => router.back(), 1500);
+      timerRef.current = setTimeout(() => router.back(), 1500);
     }
   }, [letter, updateLetterStage, router, playEffect]);
 
@@ -113,7 +118,7 @@ export default function LetterScreen() {
 
       {/* Ust bar */}
       <View style={styles.topBar}>
-        <Pressable style={styles.backButton} onPress={() => router.back()}>
+        <Pressable style={styles.backButton} onPress={() => router.back()} accessibilityLabel="Geri" accessibilityRole="button">
           <FontAwesome name="arrow-left" size={SIZES.iconMd} color={COLORS.text} />
         </Pressable>
         <Text style={[styles.title, { color: letter.color }]}>
@@ -123,7 +128,7 @@ export default function LetterScreen() {
       </View>
 
       {/* Asama gostergesi */}
-      <View style={styles.stageIndicator}>
+      <View style={styles.stageIndicator} accessible={true} accessibilityLabel={`Aşama ${stageIndex + 1}, 4 üzerinden`}>
         {['Tanıt', 'Bul', 'Yaz', 'Tamam'].map((label, i) => (
           <View key={label} style={styles.stageStep}>
             <View
@@ -135,7 +140,7 @@ export default function LetterScreen() {
             <Text
               style={[
                 styles.stageLabel,
-                i === stageIndex && { color: letter.color, fontWeight: FONTS.weightBold },
+                i === stageIndex && { color: letter.color, fontFamily: FONTS.familyBold },
               ]}
             >
               {label}
@@ -147,7 +152,7 @@ export default function LetterScreen() {
       {/* Asama 1: Tanitma */}
       {stage === 'introduce' && (
         <ScrollView contentContainerStyle={styles.stageContent} showsVerticalScrollIndicator={false}>
-          <Pressable onPress={() => playLetterSound(letter.id)}>
+          <Pressable onPress={() => { setLastActivity(Date.now()); playLetterSound(letter.id); }} accessibilityLabel={`${letter.uppercase} harfi`} accessibilityHint="Dokunarak harfin sesini dinle" accessibilityRole="button">
             <Animated.View style={[styles.letterDisplay, letterAnimStyle]}>
               <Text style={[styles.bigLetter, { color: letter.color }]}>
                 {letter.uppercase}
@@ -160,15 +165,29 @@ export default function LetterScreen() {
 
           <Pressable
             style={[styles.wordCard, SHADOW.small, { borderColor: letter.color }]}
-            onPress={() => playWordSound(letter.exampleImage)}
+            onPress={() => { setLastActivity(Date.now()); playWordSound(letter.exampleImage); }}
+            accessibilityLabel={`${letter.exampleWord}`}
+            accessibilityHint="Dokunarak kelimeyi dinle"
+            accessibilityRole="button"
           >
             <Text style={styles.emoji}>{emoji}</Text>
             <Text style={styles.wordText}>{letter.exampleWord}</Text>
             <Text style={styles.wordHighlight}>
-              <Text style={{ color: letter.color, fontWeight: FONTS.weightBlack }}>
-                {letter.uppercase}
-              </Text>
-              {letter.exampleWord.slice(1)}
+              {(() => {
+                const word = letter.exampleWord;
+                const upperWord = word.toLocaleUpperCase('tr-TR');
+                const idx = upperWord.indexOf(letter.uppercase);
+                if (idx < 0) return word;
+                return (
+                  <>
+                    {word.slice(0, idx)}
+                    <Text style={{ color: letter.color, fontFamily: FONTS.familyBlack }}>
+                      {word.slice(idx, idx + letter.uppercase.length)}
+                    </Text>
+                    {word.slice(idx + letter.uppercase.length)}
+                  </>
+                );
+              })()}
             </Text>
           </Pressable>
 
@@ -176,9 +195,13 @@ export default function LetterScreen() {
             {letter.type === 'vowel' ? 'Bu bir sesli harf' : 'Bu bir sessiz harf'}
           </Text>
 
+          <HintBubble hint="Harfe dokunarak sesini dinle, sonra Devam Et'e bas!" activityTimestamp={lastActivity} />
+
           <Pressable
-            style={[styles.continueButton, { backgroundColor: letter.color }]}
-            onPress={() => setStage('recognize')}
+            style={[styles.continueButton, { backgroundColor: GROUP_COLORS_DARK[letter.group] }]}
+            onPress={() => { setLastActivity(Date.now()); setStage('recognize'); }}
+            accessibilityLabel="Devam et"
+            accessibilityRole="button"
           >
             <Text style={styles.continueButtonText}>Devam Et</Text>
             <FontAwesome name="arrow-right" size={SIZES.iconSm} color={COLORS.textWhite} />
@@ -202,8 +225,10 @@ export default function LetterScreen() {
           <Text style={styles.bigEmoji}>{emoji}</Text>
 
           <Pressable
-            style={[styles.traceButton, SHADOW.medium, { backgroundColor: letter.color }]}
+            style={[styles.traceButton, SHADOW.medium, { backgroundColor: GROUP_COLORS_DARK[letter.group] }]}
             onPress={handleTracePress}
+            accessibilityLabel={`${letter.uppercase} harfini yaz`}
+            accessibilityRole="button"
           >
             <FontAwesome name="pencil" size={SIZES.iconMd} color={COLORS.textWhite} />
             <Text style={styles.traceButtonText}>Harfi Yaz</Text>
@@ -212,7 +237,10 @@ export default function LetterScreen() {
           <Pressable
             style={styles.skipButton}
             onPress={() => setStage('complete')}
+            accessibilityLabel="Atla"
+            accessibilityRole="button"
           >
+            <FontAwesome name="forward" size={SIZES.iconSm} color={letter.color} />
             <Text style={[styles.skipButtonText, { color: letter.color }]}>Atla</Text>
           </Pressable>
         </View>
@@ -237,6 +265,8 @@ export default function LetterScreen() {
           <Pressable
             style={[styles.continueButton, { backgroundColor: COLORS.success }]}
             onPress={handleComplete}
+            accessibilityLabel="Tamamla"
+            accessibilityRole="button"
           >
             <FontAwesome name="check" size={SIZES.iconSm} color={COLORS.textWhite} />
             <Text style={styles.continueButtonText}>Tamam</Text>
@@ -267,7 +297,7 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: FONTS.sizeLg,
-    fontWeight: FONTS.weightBold,
+    fontFamily: FONTS.familyBold,
   },
   placeholder: {
     width: SIZES.touchableMin,
@@ -305,11 +335,11 @@ const styles = StyleSheet.create({
   },
   bigLetter: {
     fontSize: FONTS.sizeHuge,
-    fontWeight: FONTS.weightBlack,
+    fontFamily: FONTS.familyBlack,
   },
   smallLetter: {
     fontSize: FONTS.sizeXxl,
-    fontWeight: FONTS.weightMedium,
+    fontFamily: FONTS.familyBold,
     opacity: 0.6,
   },
   wordCard: {
@@ -326,7 +356,7 @@ const styles = StyleSheet.create({
   },
   wordText: {
     fontSize: FONTS.sizeXl,
-    fontWeight: FONTS.weightBold,
+    fontFamily: FONTS.familyBold,
     color: COLORS.text,
   },
   wordHighlight: {
@@ -336,7 +366,7 @@ const styles = StyleSheet.create({
   infoText: {
     fontSize: FONTS.sizeSm,
     color: COLORS.textLight,
-    fontWeight: FONTS.weightMedium,
+    fontFamily: FONTS.familyBold,
   },
   continueButton: {
     flexDirection: 'row',
@@ -352,12 +382,12 @@ const styles = StyleSheet.create({
   },
   continueButtonText: {
     fontSize: FONTS.sizeMd,
-    fontWeight: FONTS.weightBold,
+    fontFamily: FONTS.familyBold,
     color: COLORS.textWhite,
   },
   stageTitle: {
     fontSize: FONTS.sizeXl,
-    fontWeight: FONTS.weightBold,
+    fontFamily: FONTS.familyBold,
     color: COLORS.text,
   },
   stageDesc: {
@@ -381,22 +411,25 @@ const styles = StyleSheet.create({
   },
   traceButtonText: {
     fontSize: FONTS.sizeLg,
-    fontWeight: FONTS.weightBold,
+    fontFamily: FONTS.familyBold,
     color: COLORS.textWhite,
   },
   skipButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: SIZES.paddingXs,
     paddingVertical: SIZES.paddingSm,
     minHeight: SIZES.touchableMin,
     justifyContent: 'center',
   },
   skipButtonText: {
     fontSize: FONTS.sizeSm,
-    fontWeight: FONTS.weightMedium,
+    fontFamily: FONTS.familyBold,
   },
   completeTitle: {
     fontSize: FONTS.sizeXl,
-    fontWeight: FONTS.weightBlack,
-    color: COLORS.success,
+    fontFamily: FONTS.familyBlack,
+    color: COLORS.successText,
   },
   completeDesc: {
     fontSize: FONTS.sizeMd,
@@ -412,11 +445,11 @@ const styles = StyleSheet.create({
   },
   summaryLetter: {
     fontSize: FONTS.sizeXxl,
-    fontWeight: FONTS.weightBlack,
+    fontFamily: FONTS.familyBlack,
   },
   summaryWord: {
     fontSize: FONTS.sizeLg,
-    fontWeight: FONTS.weightBold,
+    fontFamily: FONTS.familyBold,
     color: COLORS.text,
   },
   errorText: {

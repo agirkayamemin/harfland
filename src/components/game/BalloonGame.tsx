@@ -1,8 +1,8 @@
 // Harf Balonu - Balonlar asagidan yukari cikip rastgele konumlara yerlesiyor
 // Her turda 6 balon, dogru olanina dokun
 
-import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
-import { StyleSheet, View, Text, Pressable, Dimensions } from 'react-native';
+import { useState, useEffect, useCallback, useRef, useMemo, type MutableRefObject } from 'react';
+import { StyleSheet, View, Text, Pressable, Dimensions, type LayoutChangeEvent } from 'react-native';
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
@@ -12,6 +12,7 @@ import Animated, {
   Easing,
 } from 'react-native-reanimated';
 import { COLORS, SIZES, FONTS, SHADOW } from '../../constants/theme';
+import { HintBubble } from '../../components/feedback/HintBubble';
 import { ALPHABET, Letter } from '../../data/alphabet';
 import { useProgressStore } from '../../stores/progressStore';
 import { useAudio } from '../../hooks/useAudio';
@@ -33,8 +34,8 @@ function getUnlockedLetters(): Letter[] {
   return ALPHABET.filter((l) => progress[l.id]?.unlocked);
 }
 
-function pickRoundLetters(target: Letter): Letter[] {
-  const others = ALPHABET.filter((l) => l.id !== target.id);
+function pickRoundLetters(target: Letter, unlocked: Letter[]): Letter[] {
+  const others = unlocked.filter((l) => l.id !== target.id);
   const shuffled = others.sort(() => Math.random() - 0.5);
   const distractors = shuffled.slice(0, BALLOONS_PER_ROUND - 1);
   const all = [target, ...distractors].sort(() => Math.random() - 0.5);
@@ -107,6 +108,8 @@ function Balloon({ letter, index, targetX, targetY, onPop, popped, color }: Ball
       <Pressable
         style={[styles.balloon, SHADOW.medium, { backgroundColor: color }]}
         onPress={() => onPop(letter.id)}
+        accessibilityLabel={`${letter.uppercase} harfi balonu`}
+        accessibilityRole="button"
       >
         <Text style={styles.balloonLetter}>{letter.uppercase}</Text>
       </Pressable>
@@ -116,6 +119,7 @@ function Balloon({ letter, index, targetX, targetY, onPop, popped, color }: Ball
 
 export function BalloonGame({ onGameEnd }: BalloonGameProps) {
   const { playEffect } = useAudio();
+  const [lastActivity, setLastActivity] = useState(Date.now());
   const [round, setRound] = useState(0);
   const [score, setScore] = useState(0);
   const [target, setTarget] = useState<Letter | null>(null);
@@ -123,7 +127,16 @@ export function BalloonGame({ onGameEnd }: BalloonGameProps) {
   const [poppedId, setPoppedId] = useState<string | null>(null);
   const [feedback, setFeedback] = useState<'correct' | 'wrong' | null>(null);
   const [areaSize, setAreaSize] = useState({ width: SCREEN_WIDTH - 48, height: SCREEN_HEIGHT * 0.6 });
+  const scoreRef = useRef(0);
   const roundRef = useRef(0);
+  const timerRef = useRef<ReturnType<typeof setTimeout>>(undefined);
+
+  useEffect(() => () => { clearTimeout(timerRef.current); }, []);
+
+  const handleLayout = useCallback((e: LayoutChangeEvent) => {
+    const { width, height } = e.nativeEvent.layout;
+    setAreaSize(prev => (prev.width === width && prev.height === height) ? prev : { width, height });
+  }, []);
 
   // Her round icin yeni pozisyonlar
   const positions = useMemo(
@@ -137,7 +150,7 @@ export function BalloonGame({ onGameEnd }: BalloonGameProps) {
 
     const targetLetter = letters[Math.floor(Math.random() * letters.length)];
     setTarget(targetLetter);
-    setBalloons(pickRoundLetters(targetLetter));
+    setBalloons(pickRoundLetters(targetLetter, letters));
     setPoppedId(null);
     setFeedback(null);
   }, []);
@@ -148,32 +161,37 @@ export function BalloonGame({ onGameEnd }: BalloonGameProps) {
 
   const handlePop = useCallback(
     (id: string) => {
+      setLastActivity(Date.now());
       if (poppedId) return;
       setPoppedId(id);
 
       if (id === target?.id) {
         setFeedback('correct');
         playEffect('success');
-        setScore((prev) => prev + 1);
+        scoreRef.current += 1;
+        setScore(scoreRef.current);
       } else {
         setFeedback('wrong');
         playEffect('wrong');
       }
 
-      setTimeout(() => {
+      timerRef.current = setTimeout(() => {
         roundRef.current += 1;
         if (roundRef.current >= ROUND_COUNT) {
-          const finalScore = id === target?.id ? score + 1 : score;
-          onGameEnd(finalScore, ROUND_COUNT);
+          onGameEnd(scoreRef.current, ROUND_COUNT);
         } else {
           setRound((prev) => prev + 1);
         }
       }, 1200);
     },
-    [target, poppedId, score, onGameEnd]
+    [target, poppedId, onGameEnd]
   );
 
-  if (!target) return null;
+  if (!target) return (
+    <View style={styles.container}>
+      <Text style={styles.emptyText}>Yeterli harf yok!</Text>
+    </View>
+  );
 
   return (
     <View style={styles.container}>
@@ -192,10 +210,7 @@ export function BalloonGame({ onGameEnd }: BalloonGameProps) {
       {/* Balonlar */}
       <View
         style={styles.balloonArea}
-        onLayout={(e) => {
-          const { width, height } = e.nativeEvent.layout;
-          setAreaSize({ width, height });
-        }}
+        onLayout={handleLayout}
       >
         {balloons.map((letter, i) => (
           <Balloon
@@ -211,15 +226,17 @@ export function BalloonGame({ onGameEnd }: BalloonGameProps) {
         ))}
       </View>
 
+      <HintBubble hint="Söylenen harfin balonuna dokun!" activityTimestamp={lastActivity} />
+
       {/* Geri bildirim */}
       {feedback === 'correct' && (
-        <View style={styles.feedbackOverlay}>
-          <Text style={[styles.feedbackText, { color: COLORS.success }]}>Doğru!</Text>
+        <View style={styles.feedbackOverlay} accessibilityLiveRegion="polite">
+          <Text style={[styles.feedbackText, { color: COLORS.successText }]}>Doğru!</Text>
         </View>
       )}
       {feedback === 'wrong' && (
-        <View style={styles.feedbackOverlay}>
-          <Text style={[styles.feedbackText, { color: COLORS.warning }]}>Tekrar dene!</Text>
+        <View style={styles.feedbackOverlay} accessibilityLiveRegion="polite">
+          <Text style={[styles.feedbackText, { color: COLORS.warningText }]}>Tekrar dene!</Text>
         </View>
       )}
     </View>
@@ -230,6 +247,12 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
+  emptyText: {
+    fontSize: FONTS.sizeMd,
+    color: COLORS.textLight,
+    textAlign: 'center',
+    marginTop: 100,
+  },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -239,7 +262,7 @@ const styles = StyleSheet.create({
   },
   scoreText: {
     fontSize: FONTS.sizeMd,
-    fontWeight: FONTS.weightBold,
+    fontFamily: FONTS.familyBold,
     color: COLORS.text,
   },
   targetBadge: {
@@ -250,12 +273,12 @@ const styles = StyleSheet.create({
   },
   targetText: {
     fontSize: FONTS.sizeMd,
-    fontWeight: FONTS.weightBold,
+    fontFamily: FONTS.familyBold,
     color: COLORS.text,
   },
   targetLetter: {
     fontSize: FONTS.sizeLg,
-    fontWeight: FONTS.weightBlack,
+    fontFamily: FONTS.familyBlack,
   },
   roundText: {
     fontSize: FONTS.sizeSm,
@@ -279,7 +302,7 @@ const styles = StyleSheet.create({
   },
   balloonLetter: {
     fontSize: FONTS.sizeLg,
-    fontWeight: FONTS.weightBlack,
+    fontFamily: FONTS.familyBlack,
     color: COLORS.textWhite,
   },
   feedbackOverlay: {
@@ -291,7 +314,7 @@ const styles = StyleSheet.create({
   },
   feedbackText: {
     fontSize: FONTS.sizeXl,
-    fontWeight: FONTS.weightBlack,
+    fontFamily: FONTS.familyBlack,
     backgroundColor: COLORS.backgroundCard,
     paddingHorizontal: SIZES.paddingXl,
     paddingVertical: SIZES.paddingMd,

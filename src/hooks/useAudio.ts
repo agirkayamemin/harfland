@@ -2,12 +2,14 @@
 // Harf sesleri, kelime okumalari, efekt sesleri
 // expo-av kullanir, settingsStore'daki ses ayarina bakar
 
-import { useCallback, useRef } from 'react';
-import { Audio } from 'expo-av';
+import { useCallback, useEffect, useRef } from 'react';
+import { Audio, type AVPlaybackSource } from 'expo-av';
 import { useSettingsStore } from '../stores/settingsStore';
 
+// Unmount sonrasi ses atamasini engellemek icin mounted ref
+
 // Harf ses dosyalari (alphabet.ts audioFile alanlariyla uyumlu)
-const LETTER_SOUNDS: Record<string, any> = {
+const LETTER_SOUNDS: Record<string, AVPlaybackSource> = {
   E: require('../../assets/audio/letters/e.mp3'),
   A: require('../../assets/audio/letters/a.mp3'),
   'İ': require('../../assets/audio/letters/i.mp3'),
@@ -40,7 +42,7 @@ const LETTER_SOUNDS: Record<string, any> = {
 };
 
 // Kelime ses dosyalari (alphabet.ts wordAudioFile alanlariyla uyumlu)
-const WORD_SOUNDS: Record<string, any> = {
+const WORD_SOUNDS: Record<string, AVPlaybackSource> = {
   elma: require('../../assets/audio/words/elma.mp3'),
   ari: require('../../assets/audio/words/ari.mp3'),
   inek: require('../../assets/audio/words/inek.mp3'),
@@ -69,11 +71,11 @@ const WORD_SOUNDS: Record<string, any> = {
   fil: require('../../assets/audio/words/fil.mp3'),
   vapur: require('../../assets/audio/words/vapur.mp3'),
   dag: require('../../assets/audio/words/dag.mp3'),
-  jilet: require('../../assets/audio/words/jilet.mp3'),
+  jaguar: require('../../assets/audio/words/jaguar.mp3'),
 };
 
 // Efekt ses dosyalari
-const EFFECT_SOUNDS: Record<string, any> = {
+const EFFECT_SOUNDS: Record<string, AVPlaybackSource> = {
   success: require('../../assets/audio/effects/success.mp3'),
   hint: require('../../assets/audio/effects/hint.mp3'),
   tap: require('../../assets/audio/effects/tap.mp3'),
@@ -84,8 +86,12 @@ const EFFECT_SOUNDS: Record<string, any> = {
 
 export function useAudio() {
   const soundRef = useRef<Audio.Sound | null>(null);
+  const mountedRef = useRef(true);
   const soundEnabled = useSettingsStore((s) => s.soundEnabled);
   const soundVolume = useSettingsStore((s) => s.soundVolume);
+
+  // Unmount'ta mounted flag'ini kapat
+  useEffect(() => () => { mountedRef.current = false; }, []);
 
   // Onceki sesi temizle
   const cleanup = useCallback(async () => {
@@ -99,9 +105,12 @@ export function useAudio() {
     }
   }, []);
 
+  // Unmount'ta cleanup
+  useEffect(() => () => { cleanup(); }, [cleanup]);
+
   // Genel ses calma fonksiyonu
   const playSound = useCallback(
-    async (source: any) => {
+    async (source: AVPlaybackSource) => {
       if (!soundEnabled || !source) return;
 
       await cleanup();
@@ -111,6 +120,13 @@ export function useAudio() {
           volume: soundVolume,
           shouldPlay: true,
         });
+
+        // Unmount olduysa sesi hemen bosalt
+        if (!mountedRef.current) {
+          await sound.unloadAsync();
+          return;
+        }
+
         soundRef.current = sound;
 
         // Bitince otomatik temizle

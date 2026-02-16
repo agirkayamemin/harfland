@@ -10,6 +10,7 @@ import { MemoryGame } from '@/src/components/game/MemoryGame';
 import { MissingLetterGame } from '@/src/components/game/MissingLetterGame';
 import { TrainGame } from '@/src/components/game/TrainGame';
 import { SoundGame } from '@/src/components/game/SoundGame';
+import { ColoringGame } from '@/src/components/game/ColoringGame';
 import { ConfettiAnimation } from '@/src/components/feedback/ConfettiAnimation';
 import { useProgressStore } from '@/src/stores/progressStore';
 
@@ -19,6 +20,7 @@ const GAME_TITLES: Record<string, string> = {
   missing: 'Eksik Harf',
   train: 'Harf Treni',
   sound: 'Ses Avcısı',
+  coloring: 'Harf Boyama',
 };
 
 type GameState = 'playing' | 'result';
@@ -55,7 +57,7 @@ export default function GameScreen() {
 
       {/* Ust bar */}
       <View style={styles.topBar}>
-        <Pressable style={styles.backButton} onPress={() => router.back()}>
+        <Pressable style={styles.backButton} onPress={() => router.back()} accessibilityLabel="Geri" accessibilityRole="button">
           <FontAwesome name="arrow-left" size={SIZES.iconMd} color={COLORS.text} />
         </Pressable>
         <Text style={styles.title}>{title}</Text>
@@ -70,13 +72,14 @@ export default function GameScreen() {
           {type === 'missing' && <MissingLetterGame onGameEnd={handleGameEnd} />}
           {type === 'train' && <TrainGame onGameEnd={handleGameEnd} />}
           {type === 'sound' && <SoundGame onGameEnd={handleGameEnd} />}
+          {type === 'coloring' && <ColoringGame onGameEnd={handleGameEnd} />}
         </>
       )}
 
       {/* Sonuc ekrani */}
       {gameState === 'result' && (
         <View style={styles.resultContainer}>
-          <Text style={styles.resultTitle}>
+          <Text style={styles.resultTitle} accessibilityLiveRegion="polite">
             {totalScore > 0 && finalScore / totalScore >= 0.7 ? 'Harika!' : totalScore > 0 && finalScore / totalScore >= 0.5 ? 'İyi!' : 'Devam et!'}
           </Text>
 
@@ -92,6 +95,8 @@ export default function GameScreen() {
                 setFinalScore(0);
                 setTotalScore(0);
               }}
+              accessibilityLabel="Tekrar oyna"
+              accessibilityRole="button"
             >
               <FontAwesome name="repeat" size={SIZES.iconSm} color={COLORS.textWhite} />
               <Text style={styles.actionButtonText}>Tekrar Oyna</Text>
@@ -100,6 +105,8 @@ export default function GameScreen() {
             <Pressable
               style={[styles.actionButton, { backgroundColor: COLORS.success }]}
               onPress={() => router.back()}
+              accessibilityLabel="Tamam"
+              accessibilityRole="button"
             >
               <FontAwesome name="check" size={SIZES.iconSm} color={COLORS.textWhite} />
               <Text style={styles.actionButtonText}>Tamam</Text>
@@ -131,7 +138,7 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: FONTS.sizeLg,
-    fontWeight: FONTS.weightBold,
+    fontFamily: FONTS.familyBold,
     color: COLORS.text,
   },
   placeholder: {
@@ -145,12 +152,12 @@ const styles = StyleSheet.create({
   },
   resultTitle: {
     fontSize: FONTS.sizeXl,
-    fontWeight: FONTS.weightBlack,
+    fontFamily: FONTS.familyBlack,
     color: COLORS.text,
   },
   resultScore: {
     fontSize: FONTS.sizeXxl,
-    fontWeight: FONTS.weightBold,
+    fontFamily: FONTS.familyBold,
     color: COLORS.textLight,
   },
   buttonRow: {
@@ -171,7 +178,7 @@ const styles = StyleSheet.create({
   },
   actionButtonText: {
     fontSize: FONTS.sizeMd,
-    fontWeight: FONTS.weightBold,
+    fontFamily: FONTS.familyBold,
     color: COLORS.textWhite,
   },
 });
