@@ -44,7 +44,11 @@
       "typedRoutes": true
     },
     "extra": {
-      "privacyPolicyUrl": "https://agirkayamemin.github.io/harfland/privacy-policy.html"
+      "privacyPolicyUrl": "https://agirkayamemin.github.io/harfland/privacy-policy.html",
+      "router": {},
+      "eas": {
+        "projectId": "24ca71e8-bc3b-42ec-a3bc-e3959f525037"
+      }
     }
   }
 }

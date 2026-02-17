@@ -49,3 +49,7 @@ PROGRESS.md
 # ses uretim araclari
 .tts-venv/
 scripts/
+
+# build artifacts
+*.aab
+*.apk
